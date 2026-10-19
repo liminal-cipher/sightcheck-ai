@@ -1,0 +1,8 @@
+# User-provided PDFs and derived artefacts remain local.
+input/
+output/
+*.pdf
+*.seats.json
+*.preview.png
+.venv/
+__pycache__/
