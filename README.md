@@ -1,6 +1,6 @@
 > **2026.10.06 업데이트:** 공연장·공연 배치를 서버에 저장하고, 현장 대조 기록을 검수한 좌석을 공개 뷰어와 웹 위젯으로 게시하는 단일 운영자용 시제품입니다. 윤재님의 VLM 연결 실험을 함께 검증했으며, `npm test`에서 23개 테스트를 실행합니다. VLM API 자동 호출과 실제 공연장 시야 정확도는 검증하지 않았습니다.
 
-> **2026.10.01 개정:** 축척 도면의 좌표·높이·구조물을 1~300석의 공간과 좌석별 카메라로 바꾸는 API를 추가했습니다. 새 자료는 [기획안 개정본](docs/시야체크_AI_기획안_개정본.md), [입력/API 안내](docs/입력자료와_변환_API.md), [기술 선택·실증 계획](docs/기술선택과_실증계획.md), [참고 URL 메모](docs/참고_URL_메모.md)를 보세요. 초기 문서는 당시 검토 기록입니다.
+> **2026.10.01 개정:** 축척 도면의 좌표·높이·구조물을 1~300석의 공간과 좌석별 카메라로 바꾸는 API를 추가했습니다. 새 자료는 [기획안 개정본](docs/proposals/proposal-revised.md), [입력/API 안내](docs/technical/input-conversion-api.md), [기술 선택·실증 계획](docs/technical/technology-validation-plan.md), [참고 URL 메모](docs/research/reference-links.md)를 보세요. 초기 문서는 당시 검토 기록입니다.
 
 # 시야체크 · 작동하는 3D 좌석 시야 MVP
 
@@ -9,6 +9,8 @@
 ![동일 눈높이에서 C3와 D3를 비교하는 시제품 화면](screenshots/compare.png)
 
 기획안·기술 설계·UX 자료는 [docs/README.md](docs/README.md)에 모았습니다.
+
+문서는 `docs/proposals/`(기획안), `docs/technical/`(기술·UX), `docs/research/`(아이디어·참고 자료), `docs/images/`(문서용 이미지)로 분류합니다. 영상 프로젝트는 `media/promo-video/`와 `media/hyperframes-video/`에 있습니다. 파일명은 영어 소문자 `kebab-case`를 기본으로 하되, 도구가 인식하는 문서·설정 이름과 외부 자산명은 유지합니다. 이전 경로와 파일 해시는 [이동 기록](docs/file-migration.json)에 남겼습니다.
 ## 바로 실행
 
 Node.js 20.19+ 또는 22.12+를 설치한 후:
@@ -24,10 +26,10 @@ npm start
 
 브라우저에서 **http://127.0.0.1:4173/operator.html**를 엽니다. `npm run demo`는 가상 공연 예시를 서버 저장소에 추가하며 기존 같은 이름의 시연 자료는 유지합니다. 기존 좌석 비교 화면은 `/index.html`에서 확인할 수 있습니다. 이 주소는 서버를 실행한 PC에서만 접근할 수 있으며 배포된 웹사이트 주소가 아닙니다. 저장소가 비공개이면 clone에도 GitHub 인증이 필요합니다.
 
-Windows에서는 `npm run build` 후 이 폴더의 `실행.ps1`을 PowerShell로 실행하면 빌드된 앱을 로컬에서 엽니다. Node.js가 필요합니다. Codex에 포함된 Node도 자동으로 찾습니다. 기본 포트가 다른 프로그램에 사용 중이면 4173~4183 중 빈 포트를 선택합니다. 실행 파일과 서버는 이 PC 안에서만 동작합니다.
+Windows에서는 `npm run build` 후 이 폴더의 `start.ps1`을 PowerShell로 실행하면 빌드된 앱을 로컬에서 엽니다. Node.js가 필요합니다. Codex에 포함된 Node도 자동으로 찾습니다. 기본 포트가 다른 프로그램에 사용 중이면 4173~4183 중 빈 포트를 선택합니다. 실행 파일과 서버는 이 PC 안에서만 동작합니다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\실행.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start.ps1
 ```
 
 다른 환경에서 이미 빌드된 파일 실행: `node scripts/serve.mjs`. 포트 변경: PowerShell에서 `$env:SIGHTCHECK_PORT='4180'` 설정 후 실행합니다. HTML을 파일로 직접 열면 모듈·OCR worker가 동작하지 않으므로 HTTP 서버를 사용하세요.
@@ -104,7 +106,7 @@ Blender는 런타임 의존성이 아닙니다. 현재 좌석·벽·무대·인�
 - 입력 수정 시 검토 체크를 해제하고 이전 API 결과 적용을 비활성화합니다. 3석으로 재변환해 표시·계산과 선택 상태를 확인했습니다. 같은 좌석명이 남아 있으면 모델 갱신 후에도 선택을 유지합니다.
 - 변환 모델의 390px/320px 화면에서 가로 넘침이 없고, 비교 화면을 확인했습니다. 데스크톱 Chrome의 뷰포트 검사이며 실제 모바일 기기의 성능 검증은 아닙니다.
 - 클라이언트와 Node API의 실행용 번들을 빌드했습니다. 클라이언트 기본 JS가 약 603KB(압축 약 156KB)로 Vite의 500KB 청크 경고가 남습니다. 사진 재구성 모델을 탑재한 가벼운 앱이라는 의미가 아닙니다.
-- 실행 ZIP을 별도 폴더에 풀어 `node_modules` 없이 Node 서버의 화면·health·20석 변환·C3 시야 API를 확인했습니다. ZIP은 OCR WASM·언어 모델·문서·소스까지 포함해 약 40.8MB입니다. 압축을 풀고 `실행.ps1` 또는 `node scripts/serve.mjs`로 실행합니다.
+- 실행 ZIP을 별도 폴더에 풀어 `node_modules` 없이 Node 서버의 화면·health·20석 변환·C3 시야 API를 확인했습니다. ZIP은 OCR WASM·언어 모델·문서·소스까지 포함해 약 40.8MB입니다. 압축을 풀고 `start.ps1` 또는 `node scripts/serve.mjs`로 실행합니다.
 - 개정 기획안은 출처·AI 활용 표시·가상 시제품 그림을 포함해 A4 3페이지입니다. 본문 12pt, 줄 간격은 12pt의 160%인 고정 19.2pt로 설정했고 Word PDF 출력 후 전 페이지를 확인했습니다.
 
 ## 초기 버전 검증 결과 (2026-09-30)

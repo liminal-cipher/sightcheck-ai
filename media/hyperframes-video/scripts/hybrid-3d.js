@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Venue} from '../../../video/src/venue.js';
+import {Venue} from '../../promo-video/src/venue.js';
 import {eyePosition,getObstacles} from '../../../src/model.js';
 import spike from '../../../experiments/vlm-spike/model.json';
 const v=new Venue(1920,1080);v.baseModel=structuredClone(spike);v.ensure();

@@ -1,4 +1,4 @@
-import {chromium} from '../../../video/node_modules/playwright-core/index.mjs';
+import {chromium} from '../../promo-video/node_modules/playwright-core/index.mjs';
 import {writeFile} from 'node:fs/promises';
 const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true,args:['--disable-web-security']});
 const page=await browser.newPage({viewport:{width:1600,height:900},deviceScaleFactor:1});

@@ -4,7 +4,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parent.parent
 target = root.parent / '시야체크_실행형_MVP.zip'
 folders = ('dist', 'src', 'server', 'scripts', 'tests', 'screenshots', 'public', 'docs', 'LICENSES')
-files = ('README.md', '실행.ps1', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'index.html', 'vite.config.js', 'vite.api.config.js', '.gitignore')
+files = ('README.md', 'start.ps1', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'index.html', 'vite.config.js', 'vite.api.config.js', '.gitignore')
 with ZipFile(target, 'w', ZIP_DEFLATED, compresslevel=8) as archive:
     for name in files:
         file = root / name

@@ -2,10 +2,10 @@
 
 이 폴더는 공모전 제출 기획안과 구현을 위한 검토 자료를 보관합니다. **현재 제출안은 2026.10.01 개정본**입니다.
 
-- [기획안 개정본](시야체크_AI_기획안_개정본.md) / [Word](시야체크_AI_기획안_개정본.docx) / [PDF](시야체크_AI_기획안_개정본.pdf)
-- [입력 자료와 변환 API](입력자료와_변환_API.md)
-- [기술 선택과 실증 계획](기술선택과_실증계획.md)
-- [참고 URL 메모](참고_URL_메모.md)
+- [기획안 개정본](proposals/proposal-revised.md) / [Word](proposals/proposal-revised.docx) / [PDF](proposals/proposal-revised.pdf)
+- [입력 자료와 변환 API](technical/input-conversion-api.md)
+- [기술 선택과 실증 계획](technical/technology-validation-plan.md)
+- [참고 URL 메모](research/reference-links.md)
 
 아래는 초기 검토 자료입니다. 실제 구현 범위와 실행 방법은 [프로젝트 README](../README.md)를 기준으로 확인하세요.
 
@@ -13,13 +13,13 @@
 
 | 자료 | 내용 |
 | --- | --- |
-| [제출용 기획안 Markdown](시야체크_AI_제출용_기획안.md) | 개요, 차별성, 실현 가능성, BM, 기대 효과, 윤리·안전 |
-| [제출용 기획안 PDF](시야체크_AI_제출용_기획안.pdf) | 제출 양식에 맞춘 문서 |
-| [제출용 기획안 Word](시야체크_AI_제출용_기획안.docx) | 편집 가능한 원본 |
-| [권장 3D 구성](시야체크_AI_권장_3D_구성.md) | 공유 모델, 좌석별 카메라, 화질·정확도·운영비·모바일 설계 |
-| [기술·UX·BM 검토 노트](시야체크_AI_기술_UX_BM_검토노트.md) | 기술 비교와 타깃·사업모델 검토 |
-| [예약 UX 개념도](시야체크_AI_예약_UX_개념도.png) | 예약 전 좌석 비교 흐름 |
-| [초기 아이디어 기획](좌석시야_AI_아이디어기획_초안.md) | 아이디어 발전 과정의 초기 기록 |
+| [제출용 기획안 Markdown](proposals/proposal-submission.md) | 개요, 차별성, 실현 가능성, BM, 기대 효과, 윤리·안전 |
+| [제출용 기획안 PDF](proposals/proposal-submission.pdf) | 제출 양식에 맞춘 문서 |
+| [제출용 기획안 Word](proposals/proposal-submission.docx) | 편집 가능한 원본 |
+| [권장 3D 구성](technical/recommended-3d-architecture.md) | 공유 모델, 좌석별 카메라, 화질·정확도·운영비·모바일 설계 |
+| [기술·UX·BM 검토 노트](technical/technology-ux-business-review.md) | 기술 비교와 타깃·사업모델 검토 |
+| [예약 UX 개념도](images/booking-ux-concept.png) | 예약 전 좌석 비교 흐름 |
+| [초기 아이디어 기획](research/initial-idea.md) | 아이디어 발전 과정의 초기 기록 |
 
 기획안에는 PaddleOCR·SAM 2, AI 문의 답변, 서버 이미지 캐시 등 후속 기능도 포함됩니다. 현재 MVP의 AI 기능은 **Tesseract.js 기반 영문·숫자 OCR**입니다. 새 변환 API는 검토한 축척 도면 좌표와 실측 높이·구조물로 1~300석 모델을 구성합니다. 원근 사진 복원은 구현 범위가 아닙니다. 기획상의 기능을 모두 구현했다는 의미는 아닙니다.
 

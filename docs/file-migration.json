@@ -1,0 +1,236 @@
+[
+  {
+    "old": "docs/기술선택과_실증계획.md",
+    "new": "docs/technical/technology-validation-plan.md",
+    "sha256_before": "4ae834867fbb871af0d3c263353ee9a21376ae9ca9427f191fdfe8a5250bccff",
+    "sha256_after": "4ae834867fbb871af0d3c263353ee9a21376ae9ca9427f191fdfe8a5250bccff"
+  },
+  {
+    "old": "docs/시야체크_AI_권장_3D_구성.md",
+    "new": "docs/technical/recommended-3d-architecture.md",
+    "sha256_before": "07dcea2c74c15d680aa4ce1804725531ebd772333cd56dbc8e44f48a5f49e130",
+    "sha256_after": "07dcea2c74c15d680aa4ce1804725531ebd772333cd56dbc8e44f48a5f49e130"
+  },
+  {
+    "old": "docs/시야체크_AI_기술_UX_BM_검토노트.md",
+    "new": "docs/technical/technology-ux-business-review.md",
+    "sha256_before": "4c5f19b3c66347aae4d80a9290a325ad35c7842666a4e3156e8023d18c2d8264",
+    "sha256_after": "4c5f19b3c66347aae4d80a9290a325ad35c7842666a4e3156e8023d18c2d8264"
+  },
+  {
+    "old": "docs/시야체크_AI_기획안_개정본.docx",
+    "new": "docs/proposals/proposal-revised.docx",
+    "sha256_before": "b9d9470e047a2e19efed3a6dd296f62f97dcfeb6fe4f60854b8389f41ed01a1f",
+    "sha256_after": "b9d9470e047a2e19efed3a6dd296f62f97dcfeb6fe4f60854b8389f41ed01a1f"
+  },
+  {
+    "old": "docs/시야체크_AI_기획안_개정본.md",
+    "new": "docs/proposals/proposal-revised.md",
+    "sha256_before": "3ab70763c7fb18f5b09cc9d0cd0781a493526e1b3b97661fa05d2ebf3ee110f9",
+    "sha256_after": "3ab70763c7fb18f5b09cc9d0cd0781a493526e1b3b97661fa05d2ebf3ee110f9"
+  },
+  {
+    "old": "docs/시야체크_AI_기획안_개정본.pdf",
+    "new": "docs/proposals/proposal-revised.pdf",
+    "sha256_before": "3a2208a76e114bcc9bfd71700a98851b96ee42c4fbaee480d8757703d02faac0",
+    "sha256_after": "3a2208a76e114bcc9bfd71700a98851b96ee42c4fbaee480d8757703d02faac0"
+  },
+  {
+    "old": "docs/시야체크_AI_예약_UX_개념도.png",
+    "new": "docs/images/booking-ux-concept.png",
+    "sha256_before": "2b95553d78bdf686fb06a0b10053d540ca835d56801e9dccb2ec3d028b28a733",
+    "sha256_after": "2b95553d78bdf686fb06a0b10053d540ca835d56801e9dccb2ec3d028b28a733"
+  },
+  {
+    "old": "docs/시야체크_AI_제출용_기획안.docx",
+    "new": "docs/proposals/proposal-submission.docx",
+    "sha256_before": "524ede60f4a8b454d24b3d32e535c0865e900af503838d7e511aaf2e4396101f",
+    "sha256_after": "524ede60f4a8b454d24b3d32e535c0865e900af503838d7e511aaf2e4396101f"
+  },
+  {
+    "old": "docs/시야체크_AI_제출용_기획안.md",
+    "new": "docs/proposals/proposal-submission.md",
+    "sha256_before": "267b9459a5815450f8b63b6a59b2ba6a27a783458fb93bbade97e66e62df06d6",
+    "sha256_after": "267b9459a5815450f8b63b6a59b2ba6a27a783458fb93bbade97e66e62df06d6"
+  },
+  {
+    "old": "docs/시야체크_AI_제출용_기획안.pdf",
+    "new": "docs/proposals/proposal-submission.pdf",
+    "sha256_before": "c51e76ffbf51bcd98522bf851bee5217192244fed3c35b4fb2f39c2345fb005c",
+    "sha256_after": "c51e76ffbf51bcd98522bf851bee5217192244fed3c35b4fb2f39c2345fb005c"
+  },
+  {
+    "old": "docs/입력자료와_변환_API.md",
+    "new": "docs/technical/input-conversion-api.md",
+    "sha256_before": "a75fb9bdae5746dfbfe4787655dfe77d23b74f6be2e3363d6a626fce19038ef1",
+    "sha256_after": "30442cccbdff619ca04b3d3d85ad9379a30bf2811138d69eaac500d9f1fc49e8"
+  },
+  {
+    "old": "docs/좌석시야_AI_아이디어기획_초안.md",
+    "new": "docs/research/initial-idea.md",
+    "sha256_before": "4c6e0b835d7b0c1a881a74ca3f95cc0953ee0b993fbc19c76f76c542b0e34af4",
+    "sha256_after": "4c6e0b835d7b0c1a881a74ca3f95cc0953ee0b993fbc19c76f76c542b0e34af4"
+  },
+  {
+    "old": "docs/참고_URL_메모.md",
+    "new": "docs/research/reference-links.md",
+    "sha256_before": "36e872d08b14ac23a81e4871922903852dd7f4360bbed138d1ea401dadd0413a",
+    "sha256_after": "36e872d08b14ac23a81e4871922903852dd7f4360bbed138d1ea401dadd0413a"
+  },
+  {
+    "old": "실행.ps1",
+    "new": "start.ps1",
+    "sha256_before": "4d61fe5846f89dc94488086d1f527ff5d246c64cdcba697dd0a8a2a677ce3ac1",
+    "sha256_after": "4d61fe5846f89dc94488086d1f527ff5d246c64cdcba697dd0a8a2a677ce3ac1"
+  },
+  {
+    "old": "video/index.html",
+    "new": "media/promo-video/index.html",
+    "sha256_before": "d6f40155f72aabd8098c6ddf561dd613dfa863b7aa5c911e6f38f2d8d71fc95f",
+    "sha256_after": "3f6846b3c2bfc8bff850c4e18cef8e03b9e6810616b12f67fc4451b8cd9a7743"
+  },
+  {
+    "old": "video/LOOK.md",
+    "new": "media/promo-video/LOOK.md",
+    "sha256_before": "09b1ca1f10de95f8d2246605d96355f3d628c5d344b3318d491f1f762e8bca1d",
+    "sha256_after": "09b1ca1f10de95f8d2246605d96355f3d628c5d344b3318d491f1f762e8bca1d"
+  },
+  {
+    "old": "video/package-lock.json",
+    "new": "media/promo-video/package-lock.json",
+    "sha256_before": "2c3c856c45ad76354e48b6d39fbd3151caf24bc2ab75443a9ef828429e588031",
+    "sha256_after": "2c3c856c45ad76354e48b6d39fbd3151caf24bc2ab75443a9ef828429e588031"
+  },
+  {
+    "old": "video/package.json",
+    "new": "media/promo-video/package.json",
+    "sha256_before": "4a50f1cc8427aaceca89eaa067af6447ee062f62e1c6ca05f625ff2498acb599",
+    "sha256_after": "4a50f1cc8427aaceca89eaa067af6447ee062f62e1c6ca05f625ff2498acb599"
+  },
+  {
+    "old": "video/README.md",
+    "new": "media/promo-video/README.md",
+    "sha256_before": "5230b51835007740929310c595aab5ec4e64fc93d513805d20094c44f884fbcb",
+    "sha256_after": "07c48cee2043685fa0ea10df72622fee6739bfec8d7ca65b7f259555458fe639"
+  },
+  {
+    "old": "video/STORYBOARD.md",
+    "new": "media/promo-video/STORYBOARD.md",
+    "sha256_before": "8424424e5cf4fbba707f7c1b612c3455ddedeae913af0d45a469a6fd75632c5e",
+    "sha256_after": "8424424e5cf4fbba707f7c1b612c3455ddedeae913af0d45a469a6fd75632c5e"
+  },
+  {
+    "old": "video/assets/fonts/Pretendard-LICENSE.txt",
+    "new": "media/promo-video/assets/fonts/Pretendard-LICENSE.txt",
+    "sha256_before": "4a8e3f92a51de4ca7b18ac2f462abf5fa22c76ec9a2685dda6a0ed95c8715479",
+    "sha256_after": "4a8e3f92a51de4ca7b18ac2f462abf5fa22c76ec9a2685dda6a0ed95c8715479"
+  },
+  {
+    "old": "video/assets/fonts/PretendardVariable.woff2",
+    "new": "media/promo-video/assets/fonts/PretendardVariable.woff2",
+    "sha256_before": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
+    "sha256_after": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4"
+  },
+  {
+    "old": "video/assets/ui/rects.json",
+    "new": "media/promo-video/assets/ui/rects.json",
+    "sha256_before": "6204643fcf5bbff53c8665272ff392a88bc8f2b3f5496c15158f96beb2802811",
+    "sha256_after": "6204643fcf5bbff53c8665272ff392a88bc8f2b3f5496c15158f96beb2802811"
+  },
+  {
+    "old": "video/assets/ui/ui-a3.png",
+    "new": "media/promo-video/assets/ui/ui-a3.png",
+    "sha256_before": "70c8288ada26826ac7d221168b2af444fdb88984542a7f3e9bc3a1df0bb297d8",
+    "sha256_after": "70c8288ada26826ac7d221168b2af444fdb88984542a7f3e9bc3a1df0bb297d8"
+  },
+  {
+    "old": "video/assets/ui/ui-c3.png",
+    "new": "media/promo-video/assets/ui/ui-c3.png",
+    "sha256_before": "43a9a97fc53c4fe84a0b228cdc31b1ab48692fbc4741263ff2ba9fa6e8d03f01",
+    "sha256_after": "43a9a97fc53c4fe84a0b228cdc31b1ab48692fbc4741263ff2ba9fa6e8d03f01"
+  },
+  {
+    "old": "video/output/poster.jpg",
+    "new": "media/promo-video/output/poster.jpg",
+    "sha256_before": "a6c5580d968d54fed59e21dd111ee1dad898931db82ead630a7288bd333fb0bd",
+    "sha256_after": "a6c5580d968d54fed59e21dd111ee1dad898931db82ead630a7288bd333fb0bd"
+  },
+  {
+    "old": "video/output/sightcheck-promo-1080p60.mp4",
+    "new": "media/promo-video/output/sightcheck-promo-1080p60.mp4",
+    "sha256_before": "896210102350a8157b2ab80a0bcf4a24a1c51b792a32c904ed4ba4d1cbc06e0a",
+    "sha256_after": "896210102350a8157b2ab80a0bcf4a24a1c51b792a32c904ed4ba4d1cbc06e0a"
+  },
+  {
+    "old": "video/scripts/audio.py",
+    "new": "media/promo-video/scripts/audio.py",
+    "sha256_before": "6e6ff0dad95268d3d7fffd5b529234642c176f8ff0246cf29ffef3878bea7516",
+    "sha256_after": "6e6ff0dad95268d3d7fffd5b529234642c176f8ff0246cf29ffef3878bea7516"
+  },
+  {
+    "old": "video/scripts/browser.mjs",
+    "new": "media/promo-video/scripts/browser.mjs",
+    "sha256_before": "aaff7ee762b37cfb4c821d20fe1e7c49063f2d70ff9a0c8dde43aebe96743d52",
+    "sha256_after": "aaff7ee762b37cfb4c821d20fe1e7c49063f2d70ff9a0c8dde43aebe96743d52"
+  },
+  {
+    "old": "video/scripts/capture-ui.mjs",
+    "new": "media/promo-video/scripts/capture-ui.mjs",
+    "sha256_before": "94d97a716b5e4114e88ed8e4830cc0074decf5ab7b069431db850f1194d08029",
+    "sha256_after": "186cf90ceffe4aec962b968bf5775f07937aa80c3872d9af3186163d1c2b3f44"
+  },
+  {
+    "old": "video/scripts/render.mjs",
+    "new": "media/promo-video/scripts/render.mjs",
+    "sha256_before": "e75ff231b4bd4de1644a1570faa542c4fe153234f1d63df5221c84a89f3ffa48",
+    "sha256_after": "b3dab90dfdf085f3a76f282fb83e47a7640fd76df7c0ba8702b206b84749ea42"
+  },
+  {
+    "old": "video/scripts/server.mjs",
+    "new": "media/promo-video/scripts/server.mjs",
+    "sha256_before": "1a50669c77a113997738efe804e4a9e34f99c8385dd67e080e64f7667e444c40",
+    "sha256_after": "1720938ab6d1bc6f5e83d34f195a84688d23aaad626532244c4559ba907bad73"
+  },
+  {
+    "old": "video/scripts/sheet.py",
+    "new": "media/promo-video/scripts/sheet.py",
+    "sha256_before": "951bde8816232ffaba637d58132ca509bbefa227874203e5a8d25514172c7585",
+    "sha256_after": "951bde8816232ffaba637d58132ca509bbefa227874203e5a8d25514172c7585"
+  },
+  {
+    "old": "video/scripts/stills.mjs",
+    "new": "media/promo-video/scripts/stills.mjs",
+    "sha256_before": "eecf223e1c702f3499490284267e7064d4176053b7a43c8552ebd7131faf63d2",
+    "sha256_after": "b5d29c8f2f7ee421bf33fec3f154c40cf83dbfbc16ddbc80128ce24f21f18fb8"
+  },
+  {
+    "old": "video/src/engine.js",
+    "new": "media/promo-video/src/engine.js",
+    "sha256_before": "9b267ca9b2e67d6eb725fbf21565cab93e8ab7bf1b9425bea329139eda3eb0c1",
+    "sha256_after": "9b267ca9b2e67d6eb725fbf21565cab93e8ab7bf1b9425bea329139eda3eb0c1"
+  },
+  {
+    "old": "video/src/main.js",
+    "new": "media/promo-video/src/main.js",
+    "sha256_before": "7816a3837664b0055857c7531e1f3c6fa12588ec03101a3f398664df5b831642",
+    "sha256_after": "7816a3837664b0055857c7531e1f3c6fa12588ec03101a3f398664df5b831642"
+  },
+  {
+    "old": "video/src/scenes.js",
+    "new": "media/promo-video/src/scenes.js",
+    "sha256_before": "446031f1d92ddea52f4cbd6b200d7b08c7d861036d7a2a57882880b0f93676c9",
+    "sha256_after": "52a090262cdcbc7eaa8c7b0900b2376683270e0dcd52ba6543fcd16742e2a6bc"
+  },
+  {
+    "old": "video/src/timeline.json",
+    "new": "media/promo-video/src/timeline.json",
+    "sha256_before": "e0a2da666897633e3ac98f19062b243f959a32d8b79e4455e5950d6f27fdeeee",
+    "sha256_after": "e0a2da666897633e3ac98f19062b243f959a32d8b79e4455e5950d6f27fdeeee"
+  },
+  {
+    "old": "video/src/venue.js",
+    "new": "media/promo-video/src/venue.js",
+    "sha256_before": "8f5647a29190b687b814c67bb9b5bd56012fe7debae03da7e2d8427897ef85e8",
+    "sha256_after": "f0160631e5803dfbafc3122f3ef1db9840356c1ba206a8035396c9e0dd3e3622"
+  }
+]

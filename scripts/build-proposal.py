@@ -9,8 +9,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / 'docs' / '시야체크_AI_기획안_개정본.md'
-OUTPUT = ROOT / 'docs' / '시야체크_AI_기획안_개정본.docx'
+SOURCE = ROOT / 'docs/proposals/proposal-revised.md'
+OUTPUT = ROOT / 'docs/proposals/proposal-revised.docx'
 import tempfile
 ART = Path(tempfile.gettempdir()) / 'sightcheck-proposal'
 ART.mkdir(parents=True, exist_ok=True)

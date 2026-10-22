@@ -1,0 +1,19 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "bpm": 120,
+  "duration": 54,
+  "scenes": {
+    "hook":      [0, 6],
+    "brand":     [6, 10],
+    "ui":        [10, 14],
+    "pov":       [14, 20],
+    "compare":   [20, 26],
+    "samples":   [26, 31],
+    "layout":    [31, 36],
+    "ocr":       [36, 41],
+    "calibrate": [41, 45],
+    "trust":     [45, 48],
+    "end":       [48, 54]
+  }
+}

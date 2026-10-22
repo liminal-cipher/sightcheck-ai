@@ -1,4 +1,4 @@
-import {chromium} from '../../../video/node_modules/playwright-core/index.mjs';
+import {chromium} from '../../promo-video/node_modules/playwright-core/index.mjs';
 const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
 const p=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
 await p.goto('http://127.0.0.1:4178/operator.html');await p.waitForSelector('#preview-seat');await p.selectOption('#preview-seat','C3');await p.waitForTimeout(400);

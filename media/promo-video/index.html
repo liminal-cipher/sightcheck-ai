@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>시야체크 홍보 영상</title>
+<script type="importmap">{ "imports": { "three": "/node_modules/three/build/three.module.js" } }</script>
+<style>
+@font-face { font-family: 'Pretendard'; src: url('assets/fonts/PretendardVariable.woff2') format('woff2-variations'); font-weight: 45 920; font-display: block; }
+:root {
+  --paper:#f4f5f3; --white:#fff; --ink:#171a22; --text:#242730; --muted:#7a7e82; --border:#e7e9e5;
+  --lime:#c7ef7b; --olive:#536742; --olive2:#7f9d49; --lav:#b5a0ef; --lav2:#8c72a5; --risk:#ffae79; --risk2:#e9b47e; --stage:#151922;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #0b0c10; }
+body.preview { display: grid; place-items: center; min-height: 100vh; overflow: hidden; }
+#stage { width: 1920px; height: 1080px; position: relative; overflow: hidden; background: var(--paper); font-family: 'Pretendard', sans-serif; color: var(--ink);
+  -webkit-font-smoothing: antialiased; font-feature-settings: 'ss06'; transform-origin: 0 0; }
+body.preview #stage { position: absolute; left: 0; top: 0; }
+.scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+.scene.paper { background: var(--paper); }
+.scene.dark { background: var(--stage); color: #fff; }
+canvas.full, .slot3d, .slot3d canvas { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+
+/* 문자 마스크 */
+.line { display: block; }
+.m { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.08em 0.02em 0.14em; margin: -0.08em -0.02em -0.14em; }
+.w { display: inline-block; will-change: transform; transform: translate3d(0,125%,0); }
+em { font-style: normal; color: var(--olive2); }
+.dark em { color: var(--lime); }
+.headline { margin: 0; font-weight: 740; letter-spacing: -0.035em; line-height: 1.2; }
+.eyebrow { font-size: 19px; font-weight: 650; letter-spacing: 0.18em; color: var(--olive2); display: flex; align-items: center; gap: 14px; }
+.eyebrow b { font-weight: 700; letter-spacing: 0.04em; }
+.eyebrow i { display: inline-block; width: 28px; height: 1.5px; background: currentColor; opacity: .6; }
+.dark .eyebrow { color: var(--lime); }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* 3D 장면 공통 */
+.shade-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 520px; background: linear-gradient(to bottom, rgba(10,12,18,0), rgba(10,12,18,.55) 55%, rgba(10,12,18,.82)); }
+.shade-top { position: absolute; left: 0; right: 0; top: 0; height: 260px; background: linear-gradient(to top, rgba(10,12,18,0), rgba(10,12,18,.5)); }
+.caption { position: absolute; left: 112px; bottom: 104px; width: 1100px; }
+.caption .eyebrow { margin-bottom: 22px; }
+.caption .stack { position: relative; height: 70px; }
+.caption .stack .headline { position: absolute; left: 0; bottom: 0; font-size: 58px; white-space: nowrap; }
+.caption .sub { margin-top: 18px; font-size: 26px; font-weight: 500; color: rgba(255,255,255,.72); letter-spacing: -0.01em; }
+.chip3d { position: absolute; font-size: 22px; font-weight: 600; color: #def2c7; border: 1px solid rgba(195,215,164,.25); background: rgba(21,27,33,.72); border-radius: 8px; padding: 9px 14px; letter-spacing: -0.01em; }
+.chip3d.b { color: #e0cef7; border-color: rgba(219,184,255,.25); }
+.pin { position: absolute; left: 0; top: 0; transform-origin: 0 100%; }
+.pin .tag { position: absolute; left: 0; bottom: 0; transform: translate(-50%, -26px); white-space: nowrap; font-size: 22px; font-weight: 650; color: #171a22; background: var(--lime); border-radius: 999px; padding: 9px 18px 10px; letter-spacing: -0.01em; }
+.pin.risk .tag { background: var(--risk); }
+.pin .stem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 26px; background: var(--lime); }
+.pin.risk .stem { background: var(--risk); }
+.pin .dot { position: absolute; left: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(199,239,123,.25); }
+.pin.risk .dot { background: var(--risk); box-shadow: 0 0 0 5px rgba(255,174,121,.25); }
+.statbox { position: absolute; right: 112px; bottom: 96px; text-align: right; }
+.statbox .num { font-size: 150px; font-weight: 720; letter-spacing: -0.05em; line-height: 1; }
+.statbox .num small { font-size: 64px; font-weight: 600; margin-left: 6px; letter-spacing: -0.02em; }
+.statbox .lbl { margin-top: 10px; font-size: 24px; font-weight: 500; color: rgba(255,255,255,.7); }
+.statbox .chip3d { position: static; display: inline-block; margin-bottom: 18px; }
+.statbox .arrow { font-size: 64px; color: rgba(255,255,255,.45); font-weight: 500; margin-right: 18px; vertical-align: 22px; letter-spacing: 0; }
+.statbox .from { font-size: 64px; font-weight: 600; color: rgba(255,255,255,.45); letter-spacing: -0.03em; margin-right: 14px; vertical-align: 22px; }
+
+/* 1. 훅 */
+#s-hook .hk { position: absolute; left: 0; right: 0; top: 150px; text-align: center; font-size: 84px; }
+.tickets { position: absolute; left: 0; right: 0; top: 356px; height: 400px; }
+.ticket { position: absolute; top: 0; width: 640px; height: 392px; perspective: 2200px; }
+#tk-a { left: 300px; } #tk-b { left: 980px; }
+.tk-inner { position: absolute; inset: 0; transform-style: preserve-3d; }
+.tk-face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; overflow: hidden; }
+.tk-front { background: #fff; border: 1px solid var(--border); display: flex; box-shadow: 0 30px 60px -30px rgba(23,26,34,.25); }
+.tk-main { flex: 1; padding: 44px 48px; display: flex; flex-direction: column; }
+.tk-venue { font-size: 18px; font-weight: 600; letter-spacing: .16em; color: #8b9680; }
+.tk-seat { margin-top: 26px; font-size: 128px; font-weight: 720; letter-spacing: -0.05em; line-height: 1; }
+.tk-seat small { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; color: var(--muted); margin-right: 12px; vertical-align: 16px; }
+.tk-price { margin-top: auto; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; }
+.tk-price span { font-size: 20px; font-weight: 500; color: var(--muted); margin-left: 12px; letter-spacing: 0; }
+.tk-stub { width: 150px; border-left: 2px dashed #dfe3da; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.tk-stub::before, .tk-stub::after { content: ''; position: absolute; left: -16px; width: 30px; height: 30px; border-radius: 50%; background: var(--paper); }
+.tk-stub::before { top: -16px; } .tk-stub::after { bottom: -16px; }
+.tk-stub .bars { width: 64px; height: 150px; background: repeating-linear-gradient(to bottom, #171a22 0 3px, transparent 3px 7px, #171a22 7px 8px, transparent 8px 12px); opacity: .85; border-radius: 2px; }
+.tk-stub span { font-size: 15px; font-weight: 650; letter-spacing: .2em; color: #9aa08f; }
+.tk-back { transform: rotateY(180deg); background: var(--stage); box-shadow: 0 30px 60px -30px rgba(23,26,34,.45); }
+.tk-back canvas { position: absolute; inset: 0; width: 640px; height: 392px; }
+.tk-back .chip3d { left: 22px; top: 22px; font-size: 20px; }
+.verdict { position: absolute; left: 22px; bottom: 22px; font-size: 22px; font-weight: 650; border-radius: 999px; padding: 10px 18px 11px 16px; display: flex; align-items: center; gap: 10px; color: #171a22; }
+.verdict i { width: 10px; height: 10px; border-radius: 50%; background: #171a22; opacity: .75; }
+.verdict.risk { background: var(--risk); } .verdict.ok { background: var(--lime); }
+
+/* 2. 브랜드 */
+.lockup { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 44px; }
+.logo-tile { width: 176px; height: 176px; display: block; overflow: visible; }
+.wordmark { font-size: 168px; font-weight: 820; letter-spacing: -0.06em; line-height: 1; display: flex; align-items: baseline; }
+.wordmark .m { padding: 0.1em 0.04em 0.16em; margin: -0.1em -0.04em -0.16em; }
+.wordmark .dot { color: var(--olive2); display: inline-block; margin-left: 4px; }
+.tagline { position: absolute; left: 0; right: 0; text-align: center; font-size: 46px; font-weight: 560; letter-spacing: -0.03em; color: #4b5048; margin: 0; }
+
+/* 3. 제품 공개 */
+#ui-cap { position: absolute; left: 0; right: 0; top: 62px; text-align: center; font-size: 52px; }
+#ui-rig { position: absolute; inset: 0; transform-origin: 0 0; }
+.browser { position: absolute; left: 180px; top: 170px; width: 1560px; height: 1200px; border-radius: 22px; background: #fff; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(23,26,34,.08), 0 60px 120px -40px rgba(23,26,34,.35); transform-origin: 50% 0; }
+.chrome { height: 44px; background: #f7f8f6; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; padding: 0 18px; }
+.chrome i { width: 13px; height: 13px; border-radius: 50%; background: #dcdfd9; }
+.chrome .url { margin-left: 18px; flex: 0 0 520px; height: 28px; border-radius: 8px; background: #eceee9; font-size: 15px; color: #80857f; display: flex; align-items: center; padding-left: 14px; font-weight: 500; }
+.browser .vp { position: relative; width: 1560px; height: 1083px; }
+.browser .vp img { position: absolute; left: 0; top: 0; width: 1560px; height: 1083.33px; }
+.ripple { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 3px solid var(--olive2); opacity: 0; }
+.cursor { position: absolute; left: 0; top: 0; width: 44px; height: 44px; transform-origin: 6px 4px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.25)); }
+
+/* 5. 비교 */
+#s-compare .top { position: absolute; left: 40px; top: 58px; }
+#s-compare .top .eyebrow { margin-bottom: 18px; }
+#s-compare .stack { position: relative; height: 70px; width: 1500px; }
+#s-compare .stack .headline { position: absolute; left: 0; bottom: 0; font-size: 56px; white-space: nowrap; }
+.cmp-stat { position: absolute; top: 752px; width: 900px; }
+#cmp-a { left: 40px; } #cmp-b { left: 980px; }
+.cmp-stat .num { font-size: 124px; font-weight: 730; letter-spacing: -0.05em; line-height: 1; color: var(--olive); }
+#cmp-b .num { color: var(--lav2); }
+.cmp-stat .num small { font-size: 54px; font-weight: 620; margin-left: 4px; letter-spacing: -0.02em; }
+.cmp-stat .lbl { margin-top: 14px; font-size: 24px; font-weight: 520; color: #6f756b; display: flex; gap: 16px; align-items: center; }
+.cmp-stat .lbl b { font-weight: 650; color: var(--ink); }
+.cmp-stat .flag { position: absolute; right: 0; top: 18px; font-size: 22px; font-weight: 650; padding: 10px 18px 11px; border-radius: 999px; display: flex; gap: 10px; align-items: center; }
+.cmp-stat .flag i { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+#cmp-a .flag { background: #fff1e6; color: #b3683a; }
+#cmp-b .flag { background: #f1ebfb; color: #7a5f96; }
+.cmp-note { position: absolute; left: 40px; bottom: 44px; font-size: 18px; color: #9aa08f; font-weight: 500; }
+
+/* 6. 표본 */
+.panel-dark { position: absolute; background: rgba(14,17,24,.86); border: 1px solid rgba(255,255,255,.08); border-radius: 24px; }
+#smp-card { right: 64px; top: 64px; width: 600px; padding: 30px 32px 30px; }
+#smp-card .ttl { font-size: 18px; font-weight: 600; letter-spacing: .16em; color: rgba(255,255,255,.55); }
+#smp-card svg { display: block; margin: 22px 0 26px; }
+.smp-nums { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(255,255,255,.08); padding-top: 24px; }
+.smp-nums div { display: flex; flex-direction: column; gap: 8px; }
+.smp-nums b { font-size: 52px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+.smp-nums b small { font-size: 26px; margin-left: 2px; }
+.smp-nums span { font-size: 18px; color: rgba(255,255,255,.6); font-weight: 500; }
+.smp-nums .risk b { color: var(--risk); } .smp-nums .ok b { color: var(--lime); }
+
+/* 7. 공연별 무대 */
+.seg { position: absolute; right: 112px; top: 88px; width: 380px; height: 68px; border-radius: 14px; background: rgba(241,244,237,.96); padding: 6px; display: flex; }
+.seg .knob { position: absolute; left: 6px; top: 6px; width: 184px; height: 56px; border-radius: 10px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.seg span.opt { position: relative; flex: 1; display: grid; place-items: center; font-size: 24px; font-weight: 600; color: #7a846f; letter-spacing: -0.01em; }
+.seg span.opt.on { color: #2f3a26; }
+
+/* 8. OCR */
+.ocr-copy { position: absolute; left: 120px; top: 250px; width: 700px; }
+.ocr-copy .eyebrow { margin-bottom: 30px; }
+.ocr-copy .headline { font-size: 76px; line-height: 1.18; }
+.ocr-copy .sub { margin-top: 30px; font-size: 27px; line-height: 1.55; color: #5d625c; font-weight: 500; letter-spacing: -0.015em; }
+.safe { margin-top: 40px; display: inline-flex; align-items: center; gap: 12px; font-size: 21px; font-weight: 600; color: #536742; background: #eaf1dc; border-radius: 999px; padding: 12px 22px 13px 18px; }
+.safe svg { width: 24px; height: 24px; }
+.ocr-card { position: absolute; left: 850px; top: 150px; width: 950px; height: 640px; background: #fff; border-radius: 26px; border: 1px solid var(--border); box-shadow: 0 50px 100px -50px rgba(23,26,34,.3); overflow: hidden; }
+.ocr-card .bar { height: 58px; border-bottom: 1px solid #eef0ea; display: flex; align-items: center; padding: 0 26px; gap: 14px; font-size: 18px; font-weight: 600; color: #717b69; letter-spacing: .14em; }
+.ocr-card .bar b { margin-left: auto; letter-spacing: 0; font-size: 19px; color: var(--olive); font-weight: 650; }
+.ocr-img { position: absolute; left: 25px; top: 76px; width: 900px; height: 576px; }
+.ocr-img img { width: 900px; height: 576px; display: block; }
+.scan { position: absolute; left: -25px; right: -25px; height: 120px; background: linear-gradient(to bottom, rgba(199,239,123,0), rgba(199,239,123,.32)); border-bottom: 3px solid #9fd24a; }
+.box { position: absolute; border: 3px solid #86b83a; border-radius: 10px; background: rgba(199,239,123,.14); }
+.box span { position: absolute; left: -3px; top: -30px; font-size: 15px; font-weight: 700; color: #fff; background: #6f9a33; padding: 3px 8px 4px; border-radius: 6px 6px 6px 0; letter-spacing: .02em; }
+.ocr-chips { position: absolute; left: 850px; top: 824px; width: 950px; display: flex; gap: 8px; }
+.ocr-chips .c { width: 39px; height: 42px; border-radius: 8px 8px 5px 5px; background: #f2f4f0; border: 1px solid #dce1d8; font-size: 15px; font-weight: 650; color: #727b6b; display: grid; place-items: center; }
+.ocr-chips .c.on { background: var(--lime); border-color: #bbd887; color: #314018; }
+.ocr-count { position: absolute; left: 850px; top: 896px; font-size: 22px; font-weight: 600; color: #5d625c; }
+.ocr-count b { color: var(--olive); font-weight: 750; }
+
+/* 9. 치수 보정 */
+.ctrl { position: absolute; right: 112px; top: 88px; width: 460px; padding: 26px 30px 30px; background: rgba(250,251,248,.97); border-radius: 20px; color: var(--ink); box-shadow: 0 30px 60px -30px rgba(0,0,0,.5); }
+.ctrl .row { display: flex; align-items: baseline; justify-content: space-between; }
+.ctrl .ttl { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.ctrl .val { font-size: 34px; font-weight: 730; color: var(--olive); letter-spacing: -0.03em; }
+.ctrl .val small { font-size: 20px; margin-left: 3px; }
+.ctrl .track { position: relative; height: 10px; margin: 26px 8px 16px; border-radius: 5px; background: #e2e6dc; }
+.ctrl .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: #9db875; }
+.ctrl .knob { position: absolute; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fff; border: 3px solid #7f9d49; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.ctrl .scale { display: flex; justify-content: space-between; font-size: 16px; color: #9aa08f; font-weight: 500; padding: 0 2px; }
+.ctrl .sub { margin-top: 16px; font-size: 17px; color: #80867b; font-weight: 500; }
+
+/* 10. 신뢰 */
+#tr-head { position: absolute; left: 0; right: 0; top: 290px; text-align: center; font-size: 70px; }
+.badges { position: absolute; left: 0; right: 0; top: 540px; display: flex; justify-content: center; gap: 32px; }
+.badge { width: 470px; height: 250px; background: #fff; border: 1px solid var(--border); border-radius: 26px; padding: 40px 40px; box-shadow: 0 40px 80px -50px rgba(23,26,34,.3); }
+.badge .ic { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; background: #eef4e3; color: #536742; }
+.badge .ic svg { width: 32px; height: 32px; }
+.badge.dark .ic { background: #171a22; color: var(--lime); }
+.badge h3 { margin: 28px 0 10px; font-size: 34px; font-weight: 720; letter-spacing: -0.03em; }
+.badge p { margin: 0; font-size: 22px; color: #7a7e82; font-weight: 500; letter-spacing: -0.01em; }
+
+/* 11. 엔드카드 */
+#end-tag { top: 640px; }
+.end-feats { position: absolute; left: 0; right: 0; top: 740px; display: flex; justify-content: center; gap: 14px; }
+.end-feats span { font-size: 22px; font-weight: 600; color: #5b6653; border: 1px solid #d9dfd1; border-radius: 999px; padding: 10px 22px 11px; background: #fff; }
+.disclaimer { position: absolute; left: 0; right: 0; bottom: 54px; text-align: center; font-size: 18px; color: #9aa08f; font-weight: 500; letter-spacing: -0.005em; line-height: 1.6; }
+
+/* 미리보기 컨트롤 */
+#hud { position: fixed; left: 12px; bottom: 12px; z-index: 10; color: #cfd3c9; font: 13px system-ui; display: none; gap: 10px; align-items: center; background: rgba(0,0,0,.6); padding: 8px 12px; border-radius: 8px; }
+body.preview #hud { display: flex; }
+#hud input { width: 60vw; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. 훅 -->
+  <section class="scene paper" id="s-hook">
+    <h1 class="headline hk" id="hk1" data-text="같은 층, 같은 가격."></h1>
+    <h1 class="headline hk" id="hk2" data-text="보이는 무대도 같을까요?"></h1>
+    <h1 class="headline hk" id="hk3" data-text="예매 전엔 몰랐던 *차이*."></h1>
+    <div class="tickets">
+      <div class="ticket" id="tk-a"><div class="tk-inner">
+        <div class="tk-face tk-front">
+          <div class="tk-main"><div class="tk-venue">OREUM ART HALL</div><div class="tk-seat"><small>2층</small>C3</div><div class="tk-price">70,000원<span>발코니</span></div></div>
+          <div class="tk-stub"><div class="bars"></div><span>SEAT</span></div>
+        </div>
+        <div class="tk-face tk-back"><canvas width="640" height="392"></canvas><span class="chip3d">2층 C3</span><span class="verdict risk"><i></i>난간이 무대 하단을 가림</span></div>
+      </div></div>
+      <div class="ticket" id="tk-b"><div class="tk-inner">
+        <div class="tk-face tk-front">
+          <div class="tk-main"><div class="tk-venue">OREUM ART HALL</div><div class="tk-seat"><small>2층</small>D3</div><div class="tk-price">70,000원<span>발코니</span></div></div>
+          <div class="tk-stub"><div class="bars"></div><span>SEAT</span></div>
+        </div>
+        <div class="tk-face tk-back"><canvas width="640" height="392"></canvas><span class="chip3d b">2층 D3</span><span class="verdict ok"><i></i>고정 구조물 가림 없음</span></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 2. 브랜드 -->
+  <section class="scene paper" id="s-brand">
+    <div class="lockup" id="br-lockup">
+      <svg class="logo-tile" viewBox="0 0 64 64"><rect class="tile" width="64" height="64" rx="18" fill="#171a22"/><path class="eye" d="M10 32Q32 8 54 32Q32 56 10 32Z" fill="none" stroke="#c7ef7b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle class="pupil" cx="32" cy="32" r="8" fill="#c7ef7b"/></svg>
+      <div class="wordmark"><span class="m"><span class="w">시야체크</span></span><span class="dot">.</span></div>
+    </div>
+    <p class="tagline" id="br-tag" data-text="예매하기 전, 내 자리의 시야부터."></p>
+  </section>
+
+  <!-- 3. 제품 공개 -->
+  <section class="scene paper" id="s-ui">
+    <h2 class="headline" id="ui-cap" data-text="좌석도에서 자리를 고르면,"></h2>
+    <div id="ui-rig">
+      <div class="browser" id="ui-browser">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">시야체크 · 오름 아트홀 · 좌석 시야</span></div>
+        <div class="vp"><img id="ui-a3" src="assets/ui/ui-a3.png" alt=""><img id="ui-c3" src="assets/ui/ui-c3.png" alt=""></div>
+      </div>
+      <div class="ripple" id="ui-ripple"></div>
+      <svg class="cursor" id="ui-cursor" viewBox="0 0 44 44"><path d="M6 4 L6 34 L14 26 L19.5 38 L25 35.5 L19.5 24 L31 24 Z" fill="#171a22" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    </div>
+  </section>
+
+  <!-- 4. 좌석 시점 -->
+  <section class="scene dark" id="s-pov">
+    <div class="slot3d"></div>
+    <div class="pin" id="pov-pin"><div class="stem"></div><div class="dot"></div><div class="tag">C3 · 내 자리</div></div>
+    <div class="shade-bottom"></div>
+    <div class="caption">
+      <div class="eyebrow"><b>01</b><i></i>3D 좌석 시점</div>
+      <div class="stack"><h2 class="headline" id="pov1" data-text="좌석을 누르면, *그 자리 눈높이*로."></h2><h2 class="headline" id="pov2" data-text="하나의 공간, 스무 개의 시점."></h2></div>
+    </div>
+  </section>
+
+  <!-- 5. 비교 -->
+  <section class="scene paper" id="s-compare">
+    <div class="slot3d"></div>
+    <span class="chip3d" id="cmp-chip-a">A · 2층 C3</span>
+    <span class="chip3d b" id="cmp-chip-b">B · 2층 D3</span>
+    <div class="pin risk" id="cmp-pin"><div class="stem"></div><div class="dot"></div><div class="tag">2층 전면 난간</div></div>
+    <div class="top">
+      <div class="eyebrow"><b>02</b><i></i>나란히 비교</div>
+      <div class="stack"><h2 class="headline" id="cmp1" data-text="두 자리를, 같은 눈높이·같은 화각으로."></h2><h2 class="headline" id="cmp2" data-text="무엇이 가리는지, *원인까지*."></h2></div>
+    </div>
+    <div class="cmp-stat" id="cmp-a"><div class="num tnum"><b>0</b><small>%</small></div><div class="lbl"><b>2층 C3</b>가리지 않은 표본</div><div class="flag"><i></i><span>무대 하단 표본 <span class="tnum" id="cmp-lower">20</span>%</span></div></div>
+    <div class="cmp-stat" id="cmp-b"><div class="num tnum"><b>0</b><small>%</small></div><div class="lbl"><b>2층 D3</b>가리지 않은 표본</div><div class="flag"><i></i>같은 가격 · 한 줄 뒤</div></div>
+    <div class="cmp-note">가상 공연장 모델 기준 · 동일 눈높이 1.2m · 화각 60°</div>
+  </section>
+
+  <!-- 6. 가림 계산 -->
+  <section class="scene dark" id="s-samples">
+    <div class="slot3d"></div>
+    <canvas class="full" id="smp-dots" width="1920" height="1080"></canvas>
+    <div class="shade-bottom"></div>
+    <div class="panel-dark" id="smp-card">
+      <div class="ttl">측면 단면 · 중앙 열</div>
+      <svg id="smp-svg" width="536" height="250" viewBox="0 0 536 250"></svg>
+      <div class="smp-nums">
+        <div><b class="tnum" id="smp-total">325</b><span>무대 표본</span></div>
+        <div class="risk"><b class="tnum" id="smp-blocked">0</b><span>난간에 가림</span></div>
+        <div class="ok"><b class="tnum" id="smp-visible">0<small>%</small></b><span>가리지 않은 표본</span></div>
+      </div>
+    </div>
+    <div class="caption">
+      <div class="eyebrow"><b>03</b><i></i>가림 계산</div>
+      <div class="stack"><h2 class="headline" id="smp1" data-text="눈높이에서 무대 *325개 지점*으로."></h2></div>
+      <p class="sub" id="smp-sub"><span class="m"><span class="w">무대보다 먼저 난간을 만나는 지점을 가린 표본으로 계산합니다.</span></span></p>
+    </div>
+  </section>
+
+  <!-- 7. 공연별 무대 -->
+  <section class="scene dark" id="s-layout">
+    <div class="slot3d"></div>
+    <div class="pin risk" id="ly-pin"><div class="stem"></div><div class="dot"></div><div class="tag">촬영 카메라 타워</div></div>
+    <div class="shade-bottom"></div>
+    <div class="shade-top"></div>
+    <div class="seg" id="ly-seg"><span class="knob"></span><span class="opt" data-o="0">뮤지컬</span><span class="opt" data-o="1">라이브</span></div>
+    <div class="statbox" id="ly-stat"><span class="chip3d">A2 · 1층</span><div class="num tnum"><b>100</b><small>%</small></div><div class="lbl">가리지 않은 표본</div></div>
+    <div class="caption">
+      <div class="eyebrow"><b>04</b><i></i>공연별 무대</div>
+      <div class="stack"><h2 class="headline" id="ly1" data-text="공연마다 달라지는 *무대까지*."></h2></div>
+      <p class="sub" id="ly-sub"><span class="m"><span class="w">같은 공연장 모델에 공연별 설치물만 바꿔 다시 계산합니다.</span></span></p>
+    </div>
+  </section>
+
+  <!-- 8. AI 도면 인식 -->
+  <section class="scene paper" id="s-ocr">
+    <div class="ocr-copy">
+      <div class="eyebrow" id="ocr-eb"><b>05</b><i></i>AI 도면 인식</div>
+      <h2 class="headline" id="ocr1" data-text="도면을 올리면,\n좌석을 *읽어냅니다*."></h2>
+      <p class="sub" id="ocr-sub">OCR이 좌석 문자를 찾아 앞줄부터 순서대로 정리합니다. 운영자는 확인·수정만 하면 됩니다.</p>
+      <div class="safe" id="ocr-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>브라우저 안에서 처리 · 도면을 외부 서버로 보내지 않음</div>
+    </div>
+    <div class="ocr-card" id="ocr-card">
+      <div class="bar">VENUE STUDIO · 좌석도<b id="ocr-status">인식 중…</b></div>
+      <div class="ocr-img"><img src="../../public/sample-seatmap.png" alt=""><div class="boxes" id="ocr-boxes"></div><div class="scan" id="ocr-scan"></div></div>
+    </div>
+    <div class="ocr-chips" id="ocr-chips"></div>
+    <div class="ocr-count" id="ocr-count"><b class="tnum">0</b> / 20 좌석 후보</div>
+  </section>
+
+  <!-- 9. 치수 보정 -->
+  <section class="scene dark" id="s-cal">
+    <div class="slot3d"></div>
+    <div class="shade-bottom"></div>
+    <div class="shade-top"></div>
+    <div class="ctrl" id="cal-ctrl">
+      <div class="row"><span class="ttl">2층 전면 난간 높이</span><span class="val tnum"><b>1.00</b><small>m</small></span></div>
+      <div class="track"><div class="fill"></div><div class="knob"></div></div>
+      <div class="scale"><span>0.4m</span><span>1.5m</span></div>
+      <div class="sub">실측 치수 입력 → 모델 다시 생성</div>
+    </div>
+    <div class="statbox" id="cal-stat"><span class="chip3d">C3 · 2층</span><div class="num tnum"><b>69</b><small>%</small></div><div class="lbl">가리지 않은 표본</div></div>
+    <div class="caption">
+      <div class="eyebrow"><b>06</b><i></i>치수 보정</div>
+      <div class="stack"><h2 class="headline" id="cal1" data-text="치수를 고치면, *시야도 다시* 계산됩니다."></h2></div>
+    </div>
+  </section>
+
+  <!-- 10. 신뢰 -->
+  <section class="scene paper" id="s-trust">
+    <h2 class="headline" id="tr-head" data-text="추정인지, 확인된 것인지 *함께* 보여줍니다."></h2>
+    <div class="badges">
+      <div class="badge dark"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5m-9 5v10"/></svg></div><h3>3D 추정 시야</h3><p>계산으로 만든 시야임을 항상 표시</p></div>
+      <div class="badge"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></div><h3>실사진 대조 기록</h3><p>운영자가 같은 좌석 사진과 직접 대조</p></div>
+      <div class="badge"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M4 12h4M16 12h4"/><circle cx="12" cy="12" r="3"/></svg></div><h3>모델 버전 관리</h3><p>배치가 바뀌면 이전 기록은 재대조</p></div>
+    </div>
+  </section>
+
+  <!-- 11. 엔드카드 -->
+  <section class="scene paper" id="s-end">
+    <div class="lockup" id="end-lockup">
+      <svg class="logo-tile" viewBox="0 0 64 64"><rect class="tile" width="64" height="64" rx="18" fill="#171a22"/><path class="eye" d="M10 32Q32 8 54 32Q32 56 10 32Z" fill="none" stroke="#c7ef7b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle class="pupil" cx="32" cy="32" r="8" fill="#c7ef7b"/></svg>
+      <div class="wordmark"><span class="m"><span class="w">시야체크</span></span><span class="dot">.</span></div>
+    </div>
+    <p class="tagline" id="end-tag" data-text="예매하기 전, 내 자리의 시야부터."></p>
+    <div class="end-feats" id="end-feats"><span>3D 좌석 시점</span><span>나란히 비교</span><span>공연별 무대</span><span>AI 도면 인식</span></div>
+    <p class="disclaimer" id="end-disc">영상 속 공연장·공연·가격은 가상 시제품 화면입니다. 수치는 가상 모델의 표본 계산이며 실제 시야를 보증하지 않습니다.</p>
+  </section>
+
+</div>
+<div id="hud"><button id="hud-play">▶︎</button><input id="hud-t" type="range" min="0" max="54" step="0.01" value="0"><span id="hud-v">0.00s</span></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

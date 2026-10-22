@@ -46,7 +46,7 @@ API는 **원본 사진을 받는 무조건적 image-to-3D 생성 API가 아니�
 
 ### POST /api/v1/convert
 
-`Content-Type: application/json`. 입력 예시는 [engine-demo.json](../public/engine-demo.json)이다.
+`Content-Type: application/json`. 입력 예시는 [engine-demo.json](../../public/engine-demo.json)이다.
 
 ```json
 {
@@ -99,4 +99,4 @@ HTTP 오류: 잘못된 JSON 400, 다른 출처 브라우저 요청 403, 지원�
 
 Node 테스트 10개: 도면→기존 모델 좌표·가림 일치, 회전/이동 불변, 사진-only·높이 누락·미검토·중복 거부, 3석 모델, 검수 상태 위조 불신, 실제 HTTP 변환/계산/오류 응답, 기존 가림·OCR 로직. 합성 도면의 검증이며 실제 공연장 OCR 인식률과 시야 정확도 실적이 아니다.
 
-주요 코드: [conversion.js](../src/conversion.js), [api.mjs](../server/api.mjs), [engine-studio.js](../src/engine-studio.js), [model.js](../src/model.js), [conversion.test.js](../tests/conversion.test.js).
+주요 코드: [conversion.js](../../src/conversion.js), [api.mjs](../../server/api.mjs), [engine-studio.js](../../src/engine-studio.js), [model.js](../../src/model.js), [conversion.test.js](../../tests/conversion.test.js).
