@@ -1,0 +1,159 @@
+from pathlib import Path
+import json, math, wave, array
+
+ROOT=Path(__file__).resolve().parents[1]
+def write(name,text):
+    p=ROOT/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text,encoding='utf-8')
+
+write('frame.md','''---
+colors:
+  canvas: "#12161c"
+  ink: "#f4f5f3"
+  accent: "#c7ef7b"
+  muted: "#aeb8ba"
+typography:
+  display: Pretendard
+  body: Pretendard
+---
+User-specified bespoke dark/lime SightCheck direction overrides preset styling.
+See LOOK.md. 96px margins, large 74px headlines; use 28px or larger explanatory labels.
+''')
+
+css='''
+@font-face{font-family:Pretendard;src:url('assets/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:block}
+*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#12161c;color:#f4f5f3;font-family:Pretendard,sans-serif}
+#root{position:relative;width:100%;height:100%;overflow:hidden;background:#12161c}
+.clip{position:absolute;inset:0}.scene{position:absolute;inset:0;background:#12161c;overflow:hidden}
+.top{position:absolute;left:96px;right:96px;top:56px;display:flex;justify-content:space-between;align-items:center;font-size:23px;font-weight:600;letter-spacing:.09em;color:#aeb8ba}.brand{color:#f4f5f3;letter-spacing:-.025em;font-size:29px}.brand b{color:#c7ef7b}
+h1,h2,h3,p{margin:0}h1{font-size:88px;line-height:1.12;letter-spacing:-.045em;font-weight:750}h2{font-size:68px;line-height:1.15;letter-spacing:-.04em;font-weight:720}h3{font-size:36px;line-height:1.2;letter-spacing:-.025em}
+.lime{color:#c7ef7b}.muted{color:#aeb8ba}.orange{color:#ffae79}.eyebrow{font-size:23px;letter-spacing:.13em;font-weight:600;color:#c7ef7b;margin-bottom:21px}.sub{font-size:29px;line-height:1.55;color:#aeb8ba}.foot{position:absolute;left:96px;bottom:53px;font-size:23px;color:#aeb8ba;line-height:1.4}.pill{display:inline-block;border:1px solid #56604d;background:#222c22;border-radius:30px;padding:12px 22px;color:#c7ef7b;font-size:24px;font-weight:600}.line{height:1px;background:#394047}
+.picture{overflow:hidden;border:1px solid #394047;border-radius:18px;background:#191e25;position:absolute}.picture img{width:100%;height:100%;object-fit:cover;display:block}.tag{position:absolute;left:24px;top:22px;padding:10px 16px;background:#12161c;color:#f4f5f3;border:1px solid #56604d;border-radius:8px;font-size:27px;font-weight:700;z-index:2}.tag.right{left:auto;right:24px}.small{font-size:24px;line-height:1.5}.caption{font-size:28px;line-height:1.45;color:#aeb8ba}.arrow{font-size:45px;color:#c7ef7b}.panel{position:absolute;border:1px solid #394047;background:#1a2027;border-radius:20px;padding:32px}.row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #394047;padding:18px 0;font-size:29px}.row:last-child{border-bottom:0}.check{color:#c7ef7b;font-size:28px}
+.steps{position:absolute;left:96px;top:130px;width:1728px;display:flex;gap:16px}.step{flex:1;padding:21px 22px;border-top:3px solid #465049;color:#aeb8ba;font-size:29px;font-weight:650}.step.active{border-color:#c7ef7b;color:#c7ef7b}.step span{font-size:22px;margin-right:15px}
+.techhead{position:absolute;left:96px;top:244px}.techfoot{position:absolute;left:96px;bottom:53px;color:#aeb8ba;font-size:23px}.source{font-size:23px;color:#c7ef7b;padding:12px 0}.record{font-size:27px;line-height:1.7;color:#aeb8ba}.record b{color:#f4f5f3;font-weight:600}
+.railmark{height:3px;background:#ffae79;position:absolute;transform-origin:left center}.trust{position:absolute;top:360px;width:536px;height:360px;border-top:2px solid #58614f;padding-top:32px}.trust .num{font-size:25px;color:#c7ef7b;margin-bottom:30px}.trust h3{font-size:39px;margin-bottom:27px}.trust p{font-size:29px;color:#aeb8ba;line-height:1.6}
+'''
+
+scenes=[];motions=[]
+def scene(id,start,duration,body,anim=''):
+    scenes.append(f'<section id="{id}" class="clip" data-start="{start}" data-duration="{duration}" data-track-index="1"><div class="scene">{body}</div></section>')
+    motions.append(f'// {id}\n'+anim)
+def top(section):return f'<div class="top"><span class="brand">시야체크 <b>AI</b></span><span>{section}</span></div>'
+def pic(id,asset,x,y,w,h,label=''):
+    return f'<div id="{id}" class="picture" style="left:{x}px;top:{y}px;width:{w}px;height:{h}px"><img src="assets/{asset}.png">'+(f'<div class="tag">{label}</div>' if label else '')+'</div>'
+def steps(active):
+    return '<div class="steps">'+''.join(f'<div class="step {"active" if i==active else ""}"><span>0{i+1}</span>{s}</div>' for i,s in enumerate(['자료·AI 후보','실측·사람 검토','3D·가림 계산','대조·게시']))+'</div>'
+def enter(sel,t,delay=0):return f"enter('{sel}',{t+delay});"
+
+scene('hook',0,5,top('BEFORE YOU CHOOSE')+'''
+<div id="hook-title" style="position:absolute;left:96px;top:163px"><h1>같은 층. 비슷한 자리.</h1><h1 class="lime" style="margin-top:12px">보이는 무대는 다르다.</h1></div>
+'''+pic('hook-c','c3',96,428,850,478,'2층 C3')+pic('hook-d','d3',974,428,850,478,'2층 D3')+'''
+<div class="foot">같은 눈높이·화각의 가상 공연장 시제품 화면</div>''',
+enter('#hook-title',0)+enter('#hook-c',.35)+enter('#hook-d',.55)+"tl.fromTo('#hook-c img',{scale:1.03},{scale:1,duration:3,ease:MOVE},.7);tl.fromTo('#hook-d img',{scale:1.03},{scale:1,duration:3,ease:MOVE},.7);")
+
+scene('product',5,4,top('01 / PRODUCT EXPERIENCE')+'''
+<div id="product-title" style="position:absolute;left:96px;top:205px;width:510px"><p class="eyebrow">SELECT YOUR PERSPECTIVE</p><h1>내 자리를<br>누르는 순간.</h1><p class="sub" style="margin-top:30px">그 자리의 눈높이로<br>무대를 확인하세요.</p><div class="pill" style="margin-top:42px">좌석 선택 → 3D 시점</div></div>
+'''+pic('product-screen','product',680,176,1144,700)+'''
+<div class="foot">실제 시제품 UI · 가상 공연장</div>''',enter('#product-title',5)+enter('#product-screen',5.2)+"tl.fromTo('#product-screen',{scale:.94},{scale:1,duration:1.1,ease:MOVE},5.7);")
+
+scene('compare',9,4,top('02 / SIDE BY SIDE')+'''
+<div id="compare-title" style="position:absolute;left:96px;top:172px"><h2>두 자리를, <span class="lime">같은 기준으로.</span></h2><p class="sub" style="margin-top:20px">C3 vs D3 · 눈높이 1.20m · 화각 60°</p></div>
+'''+pic('compare-c','c3',96,370,850,478,'C3 · 전면 난간')+pic('compare-d','d3',974,370,850,478,'D3 · 한 줄 뒤')+'''
+<div class="foot">동일한 공간 모델 · 동일한 카메라 설정 · 실제 공연장 검증 결과 아님</div>''',enter('#compare-title',9)+enter('#compare-c',9.15)+enter('#compare-d',9.3))
+
+rays=''.join(f'<path class="sight-ray" d="M100 240 L{355 if y>195 else 650} {240+(y-240)*255/550 if y>195 else y}" fill="none" stroke="{ "#ffae79" if y>195 else "#c7ef7b"}" stroke-width="3"/>' for y in [70,125,180,235,290,345])
+scene('calculation',13,5,top('03 / GEOMETRY, NOT A GUESS')+'''
+<div id="calc-title" style="position:absolute;left:96px;top:168px"><h2>시선이 어디에서 막히는지.</h2><p class="sub" style="margin-top:20px">좌석 눈높이 → 무대 표본 → 등록 구조물과 교차 계산</p></div>
+'''+pic('calc-image','c3-samples',96,370,900,507,'실제 엔진의 가림 표본')+f'''
+<div id="ray-panel" class="panel" style="left:1030px;top:370px;width:794px;height:507px"><div class="small muted">가림 계산 원리 · 설명용 단면</div><svg width="728" height="350" viewBox="0 0 728 380" style="margin-top:14px">{rays}<path d="M55 340H690" stroke="#465049" stroke-width="2"/><rect x="355" y="230" width="23" height="110" fill="#ffae79"/><rect x="645" y="60" width="12" height="290" fill="#c7ef7b"/><circle cx="100" cy="240" r="13" fill="#c7ef7b"/></svg><div style="display:flex;justify-content:space-between;font-size:27px"><span>좌석 시점</span><span class="orange">난간</span><span>무대 표본</span></div></div>
+<div class="foot">합성 공간의 표본 계산 예시 · AI가 시야 품질을 판정하는 방식이 아닙니다.</div>''',enter('#calc-title',13)+enter('#calc-image',13.15)+enter('#ray-panel',13.3)+"tl.fromTo('.sight-ray',{strokeDasharray:650,strokeDashoffset:650},{strokeDashoffset:0,duration:1.5,stagger:.12,ease:MOVE},14.1);")
+
+scene('candidates',18,5,top('THE PIPELINE / FROM PLAN TO PERSPECTIVE')+steps(0)+'''
+<div id="candidate-title" class="techhead"><h2>도면을 읽고, <span class="lime">후보로 구조화.</span></h2></div>
+<div id="plan-frame" class="picture" style="left:96px;top:365px;width:534px;height:546px;background:#fff"><img src="assets/venue-plan.png" style="object-fit:contain"></div>
+<div id="candidate-arrow" class="arrow" style="position:absolute;left:674px;top:586px">→</div>
+<div id="candidate-record" class="panel" style="left:754px;top:365px;width:650px;height:546px"><div class="pill">VLM / AI Draft</div><h3 style="margin-top:28px">도면 속 공간 요소 후보</h3><div class="record" style="margin-top:25px"><b>C3</b> · 좌석명 / 2D 중심 좌표<br><b>Stage</b> · 무대 영역<br><b>Spatial elements</b> · 관련 요소 후보</div><div class="line" style="margin-top:23px"></div><div class="source">저장된 VLM 출력 연결 실험</div></div>
+<div id="ocr-record" class="panel" style="left:1432px;top:365px;width:392px;height:546px"><p class="eyebrow">LOCAL OCR</p><h3>Tesseract.js</h3><p class="sub" style="margin-top:33px">좌석 문자·라벨<br>후보 추출</p><div class="line" style="margin-top:39px"></div><p class="small muted" style="margin-top:23px">VLM과 OCR은<br>서로 다른 입력 경로</p></div>
+<div class="techfoot">VLM: 저장된 결과 사용 · 실시간 모델 호출 미구현 · 공간 요소 후보만으로 실제 치수를 확정하지 않습니다.</div>''',enter('#candidate-title',18)+enter('#plan-frame',18.1)+enter('#candidate-arrow',18.6)+enter('#candidate-record',18.8)+enter('#ocr-record',19.2)+"tl.fromTo('#plan-frame',{scale:.94},{scale:1,duration:1,ease:MOVE},18.6);")
+
+scene('human',23,4,top('THE PIPELINE / HUMAN MEASUREMENT')+steps(1)+'''
+<div id="human-title" class="techhead"><h2>실제 치수는 <span class="lime">사람이 확인.</span></h2></div>
+<div id="human-input" class="panel" style="left:96px;top:390px;width:570px;height:462px"><p class="eyebrow">AI DRAFT</p><h3>좌석·무대 픽셀 후보</h3><div class="record" style="margin-top:36px"><b>C3</b> · 위치 / 라벨 검토<br><b>Stage</b> · 전면 기준점 확인</div><div class="pill" style="margin-top:35px">단위: 이미지 좌표 px</div></div>
+<div class="arrow" style="position:absolute;left:698px;top:584px">+</div>
+<div id="human-review" class="panel" style="left:782px;top:390px;width:1042px;height:462px"><p class="eyebrow">HUMAN MEASUREMENT & REVIEW</p><div class="row"><span>축척 · 바닥 높이 · 단차</span><span class="check">실측·보정</span></div><div class="row"><span>난간 높이 · 구조물 치수</span><span class="check">실측·보정</span></div><div class="row"><span>공연별 설치물 · 배치 정보</span><span class="check">검토·등록</span></div><p class="small muted" style="margin-top:23px">실험에서는 합성 실측 입력을 결합했습니다.</p></div>
+<div class="techfoot">이미지 후보와 실측 입력을 분리합니다. VLM이 실제 높이·물리 치수를 자동 결정하지 않습니다.</div>''',enter('#human-title',23)+enter('#human-input',23.15)+enter('#human-review',23.35)+"tl.fromTo('#human-review .row',{opacity:0,x:25},{opacity:1,x:0,duration:.5,stagger:.12,ease:ENTER},23.7);")
+
+engine_nodes=[('Coordinate conversion','좌표 변환','px → m'),('Spatial model','공통 공간 모델','실측 치수 반영'),('Seat cameras','좌석별 카메라','동일 눈높이·화각'),('Sightline calculation','가림 계산','시선·구조물 교차')]
+nodes=''.join(f'<div id="engine-n{i}" style="position:absolute;left:{96+i*438}px;top:385px;width:414px;height:160px;padding:24px 20px;border-top:2px solid #c7ef7b;background:#1a2027"><p style="font-size:22px;color:#aeb8ba">{en}</p><h3 style="font-size:32px;margin-top:15px">{ko}</h3><p style="font-size:24px;color:#c7ef7b;margin-top:10px">{detail}</p></div>' for i,(en,ko,detail) in enumerate(engine_nodes))
+scene('engine',27,7,top('THE PIPELINE / EXISTING ENGINE')+steps(2)+'''
+<div id="engine-title" class="techhead"><h2>검토한 입력이 <span class="lime">좌석 시야가 되기까지.</span></h2></div>
+'''+nodes+pic('engine-model','vlm-overview',96,580,720,310,'Three.js / WebGL')+'''
+<svg id="engine-connect" width="1730" height="35" style="position:absolute;left:96px;top:548px"><path d="M0 17H1730" stroke="#c7ef7b" stroke-width="3"/><circle id="engine-pulse" cx="10" cy="17" r="8" fill="#c7ef7b"/></svg>
+'''+pic('engine-view','c3',849,580,551,310,'C3 · 시점')+'''
+<div id="engine-output" class="panel" style="left:1432px;top:580px;width:392px;height:310px"><p class="eyebrow">NEXT / 04</p><h3>검토 후 게시</h3><p class="sub" style="margin-top:24px">Reviewed viewer<br>iframe widget</p></div>
+<div class="techfoot">확인한 범위: 저장 VLM 출력 + 합성 실측 입력 → 기존 변환·카메라·가림 계산 경로 연결</div>''',enter('#engine-title',27)+''.join(enter(f'#engine-n{i}',27.2+i*.5) for i in range(4))+enter('#engine-model',28)+enter('#engine-view',29.3)+enter('#engine-output',30.5)+"tl.fromTo('#engine-connect path',{strokeDasharray:1730,strokeDashoffset:1730},{strokeDashoffset:0,duration:3,ease:MOVE},27.6);tl.fromTo('#engine-pulse',{x:0},{x:1710,duration:3,ease:MOVE},27.6);")
+
+scene('performance',34,8,top('04 / EVERY PERFORMANCE IS DIFFERENT')+'''
+<div id="performance-title" style="position:absolute;left:96px;top:168px"><h2>같은 공연장, <span class="lime">다른 공연.</span></h2><p class="sub" style="margin-top:20px">무대 배치·촬영 타워·공연별 구조물이 달라지면</p></div>
+'''+pic('performance-before','a2-theatre',96,370,850,478,'A2 · 기본 무대')+pic('performance-after','a2-concert',974,370,850,478,'A2 · 라이브 / 촬영 타워')+'''
+<div id="recalculate" style="position:absolute;left:96px;top:884px;font-size:37px;font-weight:650;color:#c7ef7b">변경된 배치로, 좌석 시야를 다시 계산.</div>
+<div class="foot">실제 엔진으로 계산·렌더한 가상 배치 예시 · 두 화면 모두 A2 / 눈높이 1.20m / 화각 60°</div>''',enter('#performance-title',34)+enter('#performance-before',34.2)+enter('#performance-after',36)+enter('#recalculate',38)+"tl.fromTo('#performance-after img',{scale:1.05},{scale:1,duration:1.4,ease:MOVE},36.4);")
+
+scene('publish',42,7,top('05 / REVIEW TO PUBLISH')+'''
+<div id="publish-title" style="position:absolute;left:96px;top:162px"><h2>검토한 버전을, <span class="lime">관객의 화면으로.</span></h2></div>
+<div id="publish-flow" style="position:absolute;left:96px;top:288px;width:1728px;display:flex;justify-content:space-between;font-size:30px;font-weight:600"><span>대표 좌석·사진 대조</span><span class="lime">→</span><span>검수 기록</span><span class="lime">→</span><span>승인 버전</span><span class="lime">→</span><span>공개 뷰어 / iframe</span></div>
+'''+pic('review-screen','review',96,375,790,493,'운영자 · 현장 대조')+pic('public-screen','public',1034,375,790,493,'관객 · 공개 뷰어')+'''
+<div id="publish-arrow" class="arrow" style="position:absolute;left:938px;top:581px">→</div>
+<div id="publish-notice" style="position:absolute;left:96px;top:904px;font-size:28px;color:#c7ef7b">현장 대조 게시에는 공개 좌석마다 현재 조건에 맞는 사진·검수 기록이 필요합니다.</div>
+<div class="foot">현재 캡처는 ‘현장 검수 전 · 시연’ 게시입니다. 실제 예매 재고·결제 연동은 포함하지 않습니다.</div>''',enter('#publish-title',42)+enter('#publish-flow',42.2)+enter('#review-screen',42.5)+enter('#publish-arrow',44)+enter('#public-screen',44.3)+enter('#publish-notice',45.3))
+
+scene('trust',49,5,top('OUR TRUST MODEL')+'''
+<div id="trust-title" style="position:absolute;left:96px;top:168px"><h2>AI 초안과 검토, <span class="lime">추정을 구분합니다.</span></h2></div>
+<div id="trust-ai" class="trust" style="left:96px"><div class="num">01 / INPUT</div><h3>AI Draft</h3><p>도면 속 좌석·공간 요소<br>구조화된 후보</p></div>
+<div id="trust-human" class="trust" style="left:692px"><div class="num">02 / REVIEW</div><h3>Human Reviewed</h3><p>실측과 보정<br>대표 좌석 현장 대조</p></div>
+<div id="trust-engine" class="trust" style="left:1288px"><div class="num">03 / ESTIMATE</div><h3>3D Estimated<br>Sightline</h3><p>검토된 공간 데이터 기반<br>기하학적 가림 계산</p></div>
+<div id="trust-limit" class="pill" style="position:absolute;left:96px;top:820px">실제 공연장 시야 정확도는 후속 실증 대상</div>
+<div class="foot">세 표시는 역할과 상태의 구분이며, 현장 정확도 인증을 의미하지 않습니다.</div>''',enter('#trust-title',49)+enter('#trust-ai',49.2)+enter('#trust-human',49.5)+enter('#trust-engine',49.8)+enter('#trust-limit',50.6))
+
+scene('end',54,4,'''
+<div id="end-mark" style="position:absolute;left:0;right:0;top:220px;display:flex;align-items:center;justify-content:center;gap:28px"><img src="assets/logo.svg" width="110" height="110"><h1 style="font-size:106px">시야체크 <span class="lime">AI</span></h1></div>
+<div id="end-message" style="position:absolute;left:0;right:0;top:440px;text-align:center"><h2 style="font-size:65px">예매하기 전, 내 자리의 시야부터.</h2><p class="sub" style="margin-top:44px">이번 공연의 이 자리에서, 무엇이 가리는가.</p></div>
+<div id="end-line" style="position:absolute;left:650px;top:690px;width:620px;height:3px;background:#c7ef7b"></div>
+<div style="position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:24px;color:#aeb8ba">가상 공연장 시제품 · VLM 연결 실험 포함 · 실제 현장 정확도 미검증</div>''',enter('#end-mark',54)+enter('#end-message',54.25)+"tl.fromTo('#end-line',{scaleX:0},{scaleX:1,duration:1,ease:MOVE},54.7);")
+
+# Carry one explicit C3 record through candidate -> reviewed input -> metric model.
+scenes[4]=scenes[4].replace('<b>C3</b> · 좌석명 / 2D 중심 좌표','<b>C3</b> · 좌석명 / 중심 (500, 653) px')
+scenes[4]=scenes[4].replace('</section>','<div id="candidate-focus" style="position:absolute;left:346px;top:721px;width:34px;height:32px;border:3px solid #8ead4e;border-radius:5px"></div><div id="candidate-data" style="position:absolute;left:336px;top:816px;background:#c7ef7b;color:#12161c;border-radius:8px;padding:10px 16px;font-size:24px;font-weight:650">C3 · (500,653) px</div></section>')
+motions[4]+="enter('#candidate-focus',18.6);enter('#candidate-data',19);tl.to('#candidate-data',{x:450,y:0,duration:1.25,ease:MOVE},20.4);"
+scenes[5]=scenes[5].replace('<b>C3</b> · 위치 / 라벨 검토','<b>C3</b> · (500, 653) px 검토').replace('단위: 이미지 좌표 px','px 후보 + 실측 m')
+scenes[6]=scenes[6].replace('NEXT / 04','C3 / 변환 예시').replace('<h3>검토 후 게시</h3><p class="sub" style="margin-top:24px">Reviewed viewer<br>iframe widget</p>','<h3>x 0 · z 8.80 m</h3><p class="sub" style="margin-top:18px">바닥 2.40 m<br>눈높이 +1.20 m</p><p class="small lime" style="margin-top:12px">대조 후 뷰어·위젯으로 →</p>')
+# Explicit engine arrows, rather than four disconnected feature cards.
+scenes[6]=scenes[6].replace('</section>',''.join(f'<span style="position:absolute;left:{516+i*438}px;top:446px;font-size:27px;color:#c7ef7b">→</span>' for i in range(3))+'</section>')
+motions[1]=motions[1].replace('scale:1,duration:1.1','scale:1,immediateRender:false,duration:1.1')
+motions[4]=motions[4].replace('scale:1,duration:1,ease:MOVE','scale:1,immediateRender:false,duration:1,ease:MOVE')
+
+js='''
+function bezier(x1,y1,x2,y2){return p=>{if(p<=0)return 0;if(p>=1)return 1;let a=0,b=1,t=p;for(let i=0;i<20;i++){t=(a+b)/2;let x=3*(1-t)*(1-t)*t*x1+3*(1-t)*t*t*x2+t*t*t;if(x<p)a=t;else b=t;}return 3*(1-t)*(1-t)*t*y1+3*(1-t)*t*t*y2+t*t*t;};}
+const ENTER=bezier(0,0,0,1),MOVE=bezier(.65,0,.35,1),EXIT=bezier(.55,0,.9,.45);
+const tl=gsap.timeline({paused:true});
+function enter(selector,time){tl.fromTo(selector,{opacity:0,y:35},{opacity:1,y:0,duration:.5,ease:ENTER},time);}
+'''+''.join(motions)+'''
+window.__timelines['main']=tl;
+'''
+write('index.html','<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>SightCheck AI — From plan to perspective</title><script src="assets/gsap.min.js"></script><style>'+css+'</style></head><body><main id="root" data-composition-id="main" data-start="0" data-duration="58" data-width="1920" data-height="1080">'+''.join(scenes)+'<audio id="score" class="clip" src="assets/score.wav" data-start="0" data-duration="58" data-track-index="4" data-volume="0.65"></audio></main><script>'+js+'</script></body></html>')
+
+# Original local score: no external recording, no generated speech, deterministic oscillators.
+rate=44100;duration=58;out=array.array('h'); chords=[[130.8128,164.8138,195.9977,246.9417],[110,130.8128,164.8138,195.9977],[87.3071,130.8128,174.6141,220],[97.9989,146.8324,195.9977,246.9417]]
+for n in range(rate*duration):
+    t=n/rate;chord=chords[int(t//4)%4]; beat=t%.5; eighth=t%.25
+    fade=min(1,t/.35,max(0,(58-t)/2.5));amp=.12 if 18<=t<34 else .17
+    pad=sum(math.sin(2*math.pi*f*t)*.019 for f in chord)
+    note=chord[int(t*4)%4]*2;pluck=math.sin(2*math.pi*note*t)*math.exp(-eighth*19)*.065
+    kick=math.sin(2*math.pi*(48*beat+3*(1-math.exp(-beat*22))))*math.exp(-beat*18)*amp
+    click=(math.sin(2*math.pi*6900*t)+math.sin(2*math.pi*8141*t))*.012*math.exp(-eighth*100)
+    value=(pad+pluck+kick+click)*fade
+    out.extend((int(value*27000),int(value*27000)))
+with wave.open(str(ROOT/'assets/score.wav'),'wb') as f:f.setnchannels(2);f.setsampwidth(2);f.setframerate(rate);f.writeframes(out.tobytes())
+write('capture/extracted/tokens.json',json.dumps({'title':'시야체크 AI','description':'좌석 시야 비교와 검수 게시 시제품','colors':['#12161c','#c7ef7b','#f4f5f3'],'fonts':['Pretendard']},ensure_ascii=False))
+write('capture/extracted/visible-text.txt',(ROOT/'BRIEF.md').read_text(encoding='utf-8'))
+write('capture/extracted/asset-descriptions.md','Local source capture; no external website capture.\n\n'+ '\n'.join(f'- assets/{p.name}: actual current product capture; synthetic venue, not real venue evidence.' for p in (ROOT/'assets').glob('*.png'))+'\n- logo.svg: repository favicon.\n- score.wav: original local synthesized score.\n- PretendardVariable.woff2: existing OFL font copied with license.\n')
+print('Built 58-second composition and original stereo score.')

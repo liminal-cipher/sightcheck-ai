@@ -1,0 +1,8 @@
+.hyperframes/
+.media/
+.thumbnails/
+.waveform-cache/
+snapshots/
+output/
+capture/demo-data/
+capture/root-preview-*/

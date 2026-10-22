@@ -1,0 +1,74 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>SightCheck AI — From plan to perspective</title><script src="assets/gsap.min.js"></script><style>
+@font-face{font-family:Pretendard;src:url('assets/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:block}
+*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#12161c;color:#f4f5f3;font-family:Pretendard,sans-serif}
+#root{position:relative;width:100%;height:100%;overflow:hidden;background:#12161c}
+.clip{position:absolute;inset:0}.scene{position:absolute;inset:0;background:#12161c;overflow:hidden}
+.top{position:absolute;left:96px;right:96px;top:56px;display:flex;justify-content:space-between;align-items:center;font-size:23px;font-weight:600;letter-spacing:.09em;color:#aeb8ba}.brand{color:#f4f5f3;letter-spacing:-.025em;font-size:29px}.brand b{color:#c7ef7b}
+h1,h2,h3,p{margin:0}h1{font-size:88px;line-height:1.12;letter-spacing:-.045em;font-weight:750}h2{font-size:68px;line-height:1.15;letter-spacing:-.04em;font-weight:720}h3{font-size:36px;line-height:1.2;letter-spacing:-.025em}
+.lime{color:#c7ef7b}.muted{color:#aeb8ba}.orange{color:#ffae79}.eyebrow{font-size:23px;letter-spacing:.13em;font-weight:600;color:#c7ef7b;margin-bottom:21px}.sub{font-size:29px;line-height:1.55;color:#aeb8ba}.foot{position:absolute;left:96px;bottom:53px;font-size:23px;color:#aeb8ba;line-height:1.4}.pill{display:inline-block;border:1px solid #56604d;background:#222c22;border-radius:30px;padding:12px 22px;color:#c7ef7b;font-size:24px;font-weight:600}.line{height:1px;background:#394047}
+.picture{overflow:hidden;border:1px solid #394047;border-radius:18px;background:transparent;position:absolute}.picture img{width:100%;height:100%;object-fit:cover;display:block}.tag{position:absolute;left:24px;top:22px;padding:10px 16px;background:#12161c;color:#f4f5f3;border:1px solid #56604d;border-radius:8px;font-size:27px;font-weight:700;z-index:2}.tag.right{left:auto;right:24px}.small{font-size:24px;line-height:1.5}.caption{font-size:28px;line-height:1.45;color:#aeb8ba}.arrow{font-size:45px;color:#c7ef7b}.panel{position:absolute;border:1px solid #394047;background:#1a2027;border-radius:20px;padding:32px}.row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #394047;padding:18px 0;font-size:29px}.row:last-child{border-bottom:0}.check{color:#c7ef7b;font-size:28px}
+.steps{position:absolute;left:96px;top:130px;width:1728px;display:flex;gap:16px}.step{flex:1;padding:21px 22px;border-top:3px solid #465049;color:#aeb8ba;font-size:29px;font-weight:650}.step.active{border-color:#c7ef7b;color:#c7ef7b}.step span{font-size:22px;margin-right:15px}
+.techhead{position:absolute;left:96px;top:244px}.techfoot{position:absolute;left:96px;bottom:53px;color:#aeb8ba;font-size:23px}.source{font-size:23px;color:#c7ef7b;padding:12px 0}.record{font-size:27px;line-height:1.7;color:#aeb8ba}.record b{color:#f4f5f3;font-weight:600}
+.railmark{height:3px;background:#ffae79;position:absolute;transform-origin:left center}.trust{position:absolute;top:360px;width:536px;height:360px;border-top:2px solid #58614f;padding-top:32px}.trust .num{font-size:25px;color:#c7ef7b;margin-bottom:30px}.trust h3{font-size:39px;margin-bottom:27px}.trust p{font-size:29px;color:#aeb8ba;line-height:1.6}
+
+#hybrid-canvas{position:absolute;inset:0;z-index:0}#hybrid-canvas canvas{width:1920px;height:1080px}
+#hook .scene,#compare .scene,#calculation .scene,#transformation .scene,#performance .scene{background:transparent}
+.hybrid-copy{position:absolute;left:96px;top:174px}.hybrid-copy h2{font-size:66px}.hybrid-copy p{font-size:25px;color:#aeb8ba;margin-top:20px;letter-spacing:.03em}
+.measure{position:absolute;padding:12px 20px;border-left:3px solid #c7ef7b;background:#12161ce8;color:#f4f5f3;font-size:27px}
+</style></head><body><main id="root" data-composition-id="main" data-start="0" data-duration="58" data-width="1920" data-height="1080"><div id="hybrid-canvas" data-layout-ignore></div><section id="hook" class="clip" data-start="0" data-duration="5" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>BEFORE YOU CHOOSE</span></div>
+<div id="hook-title" style="position:absolute;left:96px;top:163px"><h1>같은 층. 비슷한 자리.</h1><h1 class="lime" style="margin-top:12px">보이는 무대는 다르다.</h1></div>
+<div id="hook-c" class="picture" style="left:96px;top:428px;width:850px;height:478px"><div class="tag">2층 C3</div></div><div id="hook-d" class="picture" style="left:974px;top:428px;width:850px;height:478px"><div class="tag">2층 D3</div></div>
+<div class="foot">같은 눈높이·화각의 가상 공연장 시제품 화면</div></div></section><section id="product" class="clip" data-start="5" data-duration="4" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>01 / PRODUCT EXPERIENCE</span></div>
+<div id="product-title" style="position:absolute;left:96px;top:205px;width:510px"><p class="eyebrow">SELECT YOUR PERSPECTIVE</p><h1>내 자리를<br>누르는 순간.</h1><p class="sub" style="margin-top:30px">그 자리의 눈높이로<br>무대를 확인하세요.</p><div class="pill" style="margin-top:42px">좌석 선택 → 3D 시점</div></div>
+<div id="product-screen" class="picture" style="left:680px;top:176px;width:1144px;height:700px"><img src="assets/product.png"></div>
+<div class="foot">실제 시제품 UI · 가상 공연장</div></div></section><section id="compare" class="clip" data-start="9" data-duration="4" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>02 / SIDE BY SIDE</span></div>
+<div id="compare-title" style="position:absolute;left:96px;top:172px"><h2>두 자리를, <span class="lime">같은 기준으로.</span></h2><p class="sub" style="margin-top:20px">C3 vs D3 · 눈높이 1.20m · 화각 60°</p></div>
+<div id="compare-c" class="picture" style="left:96px;top:370px;width:850px;height:478px"><div class="tag">C3 · 전면 난간</div></div><div id="compare-d" class="picture" style="left:974px;top:370px;width:850px;height:478px"><div class="tag">D3 · 한 줄 뒤</div></div>
+<div class="foot">동일한 공간 모델 · 동일한 카메라 설정 · 실제 공연장 검증 결과 아님</div></div></section><section id="calculation" class="clip" data-start="13" data-duration="5" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>FROM PLAN TO PERSPECTIVE</span></div><div id="calc-title" class="hybrid-copy"><h2>그 자리에서, <span class="lime">가림의 원인까지.</span></h2><p>무대 표본과 등록 구조물의 교차 계산</p></div><div class="foot">가상 공연장 · 실제 엔진의 좌석 카메라와 가림 표본</div></div></section><section id="transformation" class="clip" data-start="18" data-duration="16" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>FROM PLAN TO PERSPECTIVE</span></div>
+<div id="hybrid-draft" class="hybrid-copy"><h2>도면에서 <span class="lime">구조를 읽고</span></h2><p>VLM 공간 요소 후보 · OCR 좌석 문자</p></div>
+<div id="hybrid-review" class="hybrid-copy"><h2>실제 공간을 <span class="lime">확인하고</span></h2><p>축척 · 단차 · 난간 높이 · 공연별 구조물</p></div>
+<div id="hybrid-sight" class="hybrid-copy"><h2>좌석의 <span class="lime">시야로 바꿉니다</span></h2><p>Three.js / WebGL · 좌석별 카메라 · 가림 계산</p></div>
+<div id="measure-width" class="measure" style="left:1270px;top:404px">무대 폭 · 8.60 m</div>
+<div id="measure-floor" class="measure" style="left:1270px;top:468px">C3 바닥 · 2.40 m</div>
+<div id="measure-rail" class="measure" style="left:1270px;top:532px">난간 높이 · 1.00 m</div>
+<div id="measure-source" style="position:absolute;left:1270px;top:602px;font-size:23px;color:#c7ef7b">실제 치수·높이는 사람이 제공·검토</div>
+<div id="seat-camera-label" class="pill" style="position:absolute;left:130px;top:378px">C3 · 눈높이 1.20m · 60°</div>
+<div class="foot"><div style="color:#c7ef7b">가상 도면 20석 · AI 후보부터 3D 시야 계산까지 연결 확인</div><div style="font-size:22px;margin-top:7px">저장 VLM 출력 + 합성 실측 입력 실험 · 실시간 VLM 호출 아님 · 실제 공연장 정확도는 후속 검증 대상</div></div>
+</div></section><section id="performance" class="clip" data-start="34" data-duration="8" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>FROM PLAN TO PERSPECTIVE</span></div><div id="performance-title" class="hybrid-copy"><h2>같은 공연장, <span class="lime">다른 공연.</span></h2><p>공연별 구조물이 바뀌면, 시야도 다시 계산.</p></div><div id="tower-before" class="pill" style="position:absolute;left:130px;top:378px">A2 · 기본 무대</div><div id="tower-after" class="pill" style="position:absolute;left:130px;top:378px">A2 · 라이브 / 촬영 타워</div><div class="foot">가상 배치 전환 예시 · 같은 좌석·눈높이·화각 · 설치물 등장 모션은 설명용</div></div></section><section id="publish" class="clip" data-start="42" data-duration="7" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>05 / REVIEW TO PUBLISH</span></div>
+<div id="publish-title" style="position:absolute;left:96px;top:162px"><h2>검토한 버전을, <span class="lime">관객의 화면으로.</span></h2></div>
+<div id="publish-flow" style="position:absolute;left:96px;top:288px;width:1728px;display:flex;justify-content:space-between;font-size:30px;font-weight:600"><span>대표 좌석·사진 대조</span><span class="lime">→</span><span>검수 기록</span><span class="lime">→</span><span>승인 버전</span><span class="lime">→</span><span>공개 뷰어 / iframe</span></div>
+<div id="review-screen" class="picture" style="left:96px;top:375px;width:790px;height:493px"><img src="assets/review.png"><div class="tag">운영자 · 현장 대조</div></div><div id="public-screen" class="picture" style="left:1034px;top:375px;width:790px;height:493px"><img src="assets/public.png"><div class="tag">관객 · 공개 뷰어</div></div>
+<div id="publish-arrow" class="arrow" style="position:absolute;left:938px;top:581px">→</div>
+<div id="publish-notice" style="position:absolute;left:96px;top:904px;font-size:28px;color:#c7ef7b">현장 대조 게시에는 공개 좌석마다 현재 조건에 맞는 사진·검수 기록이 필요합니다.</div>
+<div class="foot">현재 캡처는 ‘현장 검수 전 · 시연’ 게시입니다. 실제 예매 재고·결제 연동은 포함하지 않습니다.</div></div></section><section id="trust" class="clip" data-start="49" data-duration="5" data-track-index="1"><div class="scene"><div class="top"><span class="brand">시야체크 <b>AI</b></span><span>OUR TRUST MODEL</span></div>
+<div id="trust-title" style="position:absolute;left:96px;top:168px"><h2>AI 초안과 검토, <span class="lime">추정을 구분합니다.</span></h2></div>
+<div id="trust-ai" class="trust" style="left:96px"><div class="num">01 / INPUT</div><h3>AI Draft</h3><p>도면 속 좌석·공간 요소<br>구조화된 후보</p></div>
+<div id="trust-human" class="trust" style="left:692px"><div class="num">02 / REVIEW</div><h3>Human Reviewed</h3><p>실측과 보정<br>대표 좌석 현장 대조</p></div>
+<div id="trust-engine" class="trust" style="left:1288px"><div class="num">03 / ESTIMATE</div><h3>3D Estimated<br>Sightline</h3><p>검토된 공간 데이터 기반<br>기하학적 가림 계산</p></div>
+<div id="trust-limit" class="pill" style="position:absolute;left:96px;top:820px">실제 공연장 시야 정확도는 후속 실증 대상</div>
+<div class="foot">세 표시는 역할과 상태의 구분이며, 현장 정확도 인증을 의미하지 않습니다.</div></div></section><section id="end" class="clip" data-start="54" data-duration="4" data-track-index="1"><div class="scene">
+<div id="end-mark" style="position:absolute;left:0;right:0;top:220px;display:flex;align-items:center;justify-content:center;gap:28px"><img src="assets/logo.svg" width="110" height="110"><h1 style="font-size:106px">시야체크 <span class="lime">AI</span></h1></div>
+<div id="end-message" style="position:absolute;left:0;right:0;top:440px;text-align:center"><h2 style="font-size:65px">예매하기 전, 내 자리의 시야부터.</h2><p class="sub" style="margin-top:44px">이번 공연의 이 자리에서, 무엇이 가리는가.</p></div>
+<div id="end-line" style="position:absolute;left:650px;top:690px;width:620px;height:3px;background:#c7ef7b"></div>
+<div style="position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:24px;color:#aeb8ba">가상 공연장 시제품 · VLM 연결 실험 포함 · 실제 현장 정확도 미검증</div></div></section><audio id="score" class="clip" src="assets/score.wav" data-start="0" data-duration="58" data-track-index="4" data-volume="0.65"></audio></main><script>
+function bezier(x1,y1,x2,y2){return p=>{if(p<=0)return 0;if(p>=1)return 1;let a=0,b=1,t=p;for(let i=0;i<20;i++){t=(a+b)/2;let x=3*(1-t)*(1-t)*t*x1+3*(1-t)*t*t*x2+t*t*t;if(x<p)a=t;else b=t;}return 3*(1-t)*(1-t)*t*y1+3*(1-t)*t*t*y2+t*t*t;};}
+const ENTER=bezier(0,0,0,1),MOVE=bezier(.65,0,.35,1),EXIT=bezier(.55,0,.9,.45);
+const tl=gsap.timeline({paused:true});
+function enter(selector,time){tl.fromTo(selector,{opacity:0,y:35},{opacity:1,y:0,duration:.5,ease:ENTER},time);}
+// hook
+enter('#hook-title',0);enter('#hook-c',0.35);enter('#hook-d',0.55);// product
+enter('#product-title',5);enter('#product-screen',5.2);tl.fromTo('#product-screen',{scale:.94},{scale:1,immediateRender:false,duration:1.1,ease:MOVE},5.7);// compare
+enter('#compare-title',9);enter('#compare-c',9.15);enter('#compare-d',9.3);// revised Three.js mechanism
+enter('#calc-title',13);
+enter('#hybrid-draft',18);tl.to('#hybrid-draft',{opacity:0,y:-20,duration:.35,ease:EXIT},22.5);
+enter('#hybrid-review',23);tl.to('#hybrid-review',{opacity:0,y:-20,duration:.35,ease:EXIT},27.5);
+enter('#measure-width',23.3);enter('#measure-floor',23.5);enter('#measure-rail',23.7);enter('#measure-source',23.9);
+tl.to(['#measure-width','#measure-floor','#measure-rail','#measure-source'],{opacity:0,duration:.35,ease:EXIT},27.5);
+enter('#hybrid-sight',28);enter('#seat-camera-label',30.5);
+enter('#performance-title',34);enter('#tower-before',34.2);tl.to('#tower-before',{opacity:0,duration:.35,ease:EXIT},35.65);enter('#tower-after',36.1);
+// publish
+enter('#publish-title',42);enter('#publish-flow',42.2);enter('#review-screen',42.5);enter('#publish-arrow',44);enter('#public-screen',44.3);enter('#publish-notice',45.3);// trust
+enter('#trust-title',49);enter('#trust-ai',49.2);enter('#trust-human',49.5);enter('#trust-engine',49.8);enter('#trust-limit',50.6);// end
+enter('#end-mark',54);enter('#end-message',54.25);tl.fromTo('#end-line',{scaleX:0},{scaleX:1,duration:1,ease:MOVE},54.7);
+tl.eventCallback('onUpdate',()=>window.renderHybrid?.(tl.time()));window.__timelines['main']=tl;
+</script><script src="assets/hybrid-3d.js"></script></body></html>

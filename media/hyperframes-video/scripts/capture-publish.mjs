@@ -1,0 +1,12 @@
+import {chromium} from '../../../video/node_modules/playwright-core/index.mjs';
+const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const p=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
+await p.goto('http://127.0.0.1:4178/operator.html');await p.waitForSelector('#preview-seat');await p.selectOption('#preview-seat','C3');await p.waitForTimeout(400);
+await p.screenshot({path:'media/hyperframes-video/assets/operator.png'});
+console.log(await p.locator('[data-step]').evaluateAll(es=>es.map(e=>({step:e.dataset.step,text:e.innerText}))));
+await p.locator('[data-step="review"]').click();await p.waitForTimeout(300);await p.locator('#editor').scrollIntoViewIfNeeded();await p.screenshot({path:'media/hyperframes-video/assets/review.png'});
+await p.locator('[data-step="publish"]').click();await p.waitForTimeout(300);await p.locator('#editor').scrollIntoViewIfNeeded();await p.screenshot({path:'media/hyperframes-video/assets/publish.png'});
+console.log(await p.locator('a').evaluateAll(es=>es.map(e=>({text:e.textContent,href:e.href})).filter(e=>/publication/.test(e.href))));
+const link=await p.locator('a[href*="viewer.html"]').first().getAttribute('href');
+await p.goto(new URL(link,'http://127.0.0.1:4178').href+'&seat=C3');await p.waitForSelector('canvas');await p.waitForTimeout(400);await p.screenshot({path:'media/hyperframes-video/assets/public.png'});
+await browser.close();

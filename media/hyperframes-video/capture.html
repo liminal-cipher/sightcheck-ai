@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#151922}#view{width:1600px;height:900px}</style></head><body><div id="view"></div><script type="module">
+import {VenueViewer} from '../../src/scene.js';
+import {DEFAULT_MODEL,getSeats,analyzeSightline} from '../../src/model.js';
+const v=new VenueViewer(document.querySelector('#view'),()=>{});window.viewer=v;
+const spike=await fetch('../../experiments/vlm-spike/model.json').then(r=>r.json());
+window.shot=(seat='C3',layout='theatre',mode='seat',overlay=false,vlm=false)=>{const m=structuredClone(vlm?spike:DEFAULT_MODEL); v.rebuild(m,layout); const seats=getSeats(m); const selected=seats.findIndex(s=>s.label===seat);v.setView({selected,comparison:null,layout,mode,eyeHeight:1.2,overlay});v.render();return analyzeSightline(m,seats[selected],layout,1.2)};
+window.shot();window.ready=true;
+</script></body></html>
