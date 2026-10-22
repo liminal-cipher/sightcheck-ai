@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {adaptBase} from './adapter.mjs';
 import {convertPlan} from '../../src/conversion.js';
 const read = async path => JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8'));
-const base = await read('../../scripts/experiments/vlm-spike/base-vlm-output.json');
+const base = await read('fixtures/base-vlm-output.json');
 const fixture = await read('../../public/engine-demo.json');
 const convert = (v = base, f = fixture) => convertPlan(adaptBase(v, f, fixture.image));
 
@@ -35,7 +35,7 @@ test('VLM metric/obstacle additions are ignored; missing human measurements fail
   assert.throws(() => convert(unmatched), /Missing measurement/);
 });
 test('railing schema and different image dimensions cannot enter this adapter', async () => {
-  const rail = await read('../../scripts/experiments/vlm-spike/railing-vlm-output.json');
+  const rail = await read('fixtures/railing-vlm-output.json');
   assert.throws(() => adaptBase(rail, fixture, {width: 1254, height: 1254}), /dimensions/);
   assert.throws(() => adaptBase(rail, fixture, fixture.image), /region_px/);
 });

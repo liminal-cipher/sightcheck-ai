@@ -11,8 +11,10 @@ VLM 호출은 사용자가 ChatGPT에서 별도로 수행한 단계다. 이번 �
 
 실제 실행 경로:
 
+2026-10-23 폴더 정리로 입력 자료를 `experiments/vlm-spike/fixtures/`로 옮겼다. 아래 실행 경로는 현재 위치이며, 과거 실행 기록과 결과 JSON의 원본 경로는 그대로 보존한다. 입력 파일 내용은 변경하지 않았다.
+
 ```text
-scripts/experiments/vlm-spike/base-vlm-output.json
+experiments/vlm-spike/fixtures/base-vlm-output.json
   + public/engine-demo.json의 허용된 fixture 필드
   + public/engine-plan.png의 실제 이미지 크기
 → experiments/vlm-spike/adapter.mjs

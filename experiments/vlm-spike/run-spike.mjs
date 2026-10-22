@@ -10,9 +10,9 @@ import {adaptBase} from './adapter.mjs';
 const root = new URL('../../', import.meta.url);
 const sources = {
   baseImage: 'public/engine-plan.png', fixture: 'public/engine-demo.json',
-  baseVlm: 'scripts/experiments/vlm-spike/base-vlm-output.json',
-  railingImage: 'scripts/experiments/vlm-spike/railing-plan.png',
-  railingVlm: 'scripts/experiments/vlm-spike/railing-vlm-output.json',
+  baseVlm: 'experiments/vlm-spike/fixtures/base-vlm-output.json',
+  railingImage: 'experiments/vlm-spike/fixtures/railing-plan.png',
+  railingVlm: 'experiments/vlm-spike/fixtures/railing-vlm-output.json',
 };
 const bytes = Object.fromEntries(await Promise.all(Object.entries(sources).map(async ([key, path]) => [key, await readFile(new URL(path, root))])));
 const json = key => JSON.parse(bytes[key].toString('utf8'));
