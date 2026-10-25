@@ -27,7 +27,8 @@ $seatmapPython = 'experiments/seatmap-pdf/.venv/Scripts/python.exe'
 Node.js and the repository's existing `tesseract.js` dependency are required.
 For a fresh checkout, create the isolated environment with
 `python -m venv experiments/seatmap-pdf/.venv`, install the requirements above,
-and run `npm ci` followed by `npm run prepare:ocr` to prepare the existing local
+and run `pnpm install --frozen-lockfile` (the root has no npm lockfile), followed
+by `npm run prepare:ocr` to prepare the existing local
 OCR dependencies. Dependency setup may download packages; recognition itself
 uses only local resources.
 The OCR worker, WASM core and English language file are read locally from
@@ -131,6 +132,40 @@ evidence of perfect detection recall.
 
 ## Manual review
 
+To refresh only the review screen and PDF/JPEG context images from existing results
+and the original local PDFs (read-only),
+without rewriting review JSON, evaluations or seat crops:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/run_experiment.py --review-only
+```
+
+The seat enlargement's red rectangle extends beyond the candidate bbox by
+`SEAT_HIGHLIGHT_PADDING` in `run_experiment.py`: 1.5 PDF points (3 rendered pixels
+at scale 2) or 3 JPEG pixels on each side. Crop size, origin and position mapping
+are unchanged. To update existing seat crops alone, preserving context images
+and all review/evaluation JSON:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/run_experiment.py --crops-only
+```
+
+PDF samples retain the seat enlargement and add a block context image. Its bounds
+include the predicted region's `bbox_pt`, the complete `label_bbox_pt` and the
+selected seat, with proportional space for nearby boundaries. This includes side
+and rear labels regardless of text direction. Blue outlines show predicted block
+extents; thin orange corners outside the source vector cell locate the selected seat
+candidate without covering source ink. If no enclosing cell is found, the marker
+is omitted with a notice. Neither mark
+confirms correctness. Open the image at full size to inspect it; position clicks
+still belong to the original seat crop. Missing predicted regions use the full
+page. JPEG samples add a full-plan image from the saved RGB copy, preserving
+row labels, BOX columns and floor divisions. Orange exterior corners locate the
+selected candidate without covering source ink. Open at full size to read labels.
+Predicted zones and rows are explicitly unverified; no inferred zone boundary or
+floor assignment is added. Blue regions remain region candidates, not individual
+seats. Seat crops, position annotation and the exported JSON schema are unchanged.
+
 Open `output/phase-abc/report.html` for comparison tables and full overlays, then
 `output/phase-abc/review.html` for annotated crops. JSON, CSV, raw OCR and RGB
 working images live in the respective output subfolders. Overlay colors:
@@ -173,7 +208,9 @@ inventory of a defined region; this tool does not estimate it from printed total
 
 ## Scope and validation
 
-24 synthetic/contract/evaluation tests pass. Actual seven-plan comparison checks
+The original recorded run passed 24 synthetic/contract/evaluation tests.
+On 2026-10-26, all 33 local tests passed, including the nine additional
+review-context tests. Actual seven-plan comparison checks
 that all previous IDs and text centers survive. Image overlays were inspected
 for unresolved glyphs, BOX/floor separation and blue-region handling; this is
 qualitative diagnosis, not completed ground-truth annotation.
