@@ -35,7 +35,7 @@ if (!params.has('render')) {
   const slider = document.getElementById('hud-t'), label = document.getElementById('hud-v'), btn = document.getElementById('hud-play');
   slider.max = String(timeline.duration);
   let playing = params.has('play'), t = Number(params.get('t') || 0), last = performance.now();
-  const audio = new Audio('assets/audio/soundtrack.wav');
+  const audio = new Audio('out/soundtrack.wav');
   const show = () => { seek(t); slider.value = String(t); label.textContent = `${t.toFixed(2)}s`; };
   slider.addEventListener('input', () => { t = Number(slider.value); audio.currentTime = t; show(); });
   btn.addEventListener('click', () => { playing = !playing; last = performance.now(); if (playing) { audio.currentTime = t; audio.play().catch(() => {}); } else audio.pause(); });

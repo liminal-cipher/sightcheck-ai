@@ -39,7 +39,7 @@ npm run render:draft     # 30fps 초안 → out/draft.mp4 (약 8분)
 npm run render           # 60fps 최종 → out/sightcheck-promo.mp4 (약 15분)
 ```
 
-미리보기: `npm run preview` 후 `http://127.0.0.1:4300/media/promo-video/`를 엽니다. 하단 슬라이더로 시간을 옮길 수 있고, `?t=24.5`로 특정 시점을, `?play`로 재생을 엽니다.
+미리보기: `npm run audio`로 음원을 만든 뒤 `npm run preview`를 실행하고 `http://127.0.0.1:4300/media/promo-video/`를 엽니다. 미리보기와 렌더는 모두 `out/soundtrack.wav`를 사용합니다. 하단 슬라이더로 시간을 옮길 수 있고, `?t=24.5`로 특정 시점을, `?play`로 재생을 엽니다.
 
 QC용 정지 프레임: `node scripts/stills.mjs out/stills 3 14.5 27` 후 `python3 scripts/sheet.py`로 컨택트 시트를 만듭니다.
 
