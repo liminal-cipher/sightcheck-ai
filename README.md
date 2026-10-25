@@ -2,7 +2,7 @@
 
 > **2026.10.01 개정:** 축척 도면의 좌표·높이·구조물을 1~300석의 공간과 좌석별 카메라로 바꾸는 API를 추가했습니다. 새 자료는 [기획안 개정본](docs/proposals/proposal-revised.md), [입력/API 안내](docs/technical/input-conversion-api.md), [기술 선택·실증 계획](docs/technical/technology-validation-plan.md), [참고 URL 메모](docs/research/reference-links.md)를 보세요. 초기 문서는 당시 검토 기록입니다.
 
-# 시야체크 · 작동하는 3D 좌석 시야 MVP
+# 시야체크 · 3D 좌석 시야 시제품
 
 좌석을 선택하면 같은 공연장 모델에서 카메라만 이동합니다. Three.js 기반 예약 전 비교 화면과 운영자의 도면 OCR·치수 보정 화면을 구현했습니다. 실제 공연장·공연·가격·예매 재고는 없는 **가상 시제품**입니다.
 
@@ -11,14 +11,20 @@
 기획안·기술 설계·UX 자료는 [docs/README.md](docs/README.md)에 모았습니다.
 
 문서는 `docs/proposals/`(기획안), `docs/technical/`(기술·UX), `docs/research/`(아이디어·참고 자료), `docs/images/`(문서용 이미지)로 분류합니다. 영상 프로젝트는 `media/promo-video/`와 `media/hyperframes-video/`에 있습니다. 파일명은 영어 소문자 `kebab-case`를 기본으로 하되, 도구가 인식하는 문서·설정 이름과 외부 자산명은 유지합니다. 이전 경로와 파일 해시는 [이동 기록](docs/file-migration.json)에 남겼습니다.
+## 현재 저장소와 검증 범위
+
+팀 제품의 원본은 [PhrenO0/sightcheck-ai](https://github.com/PhrenO0/sightcheck-ai)입니다. 이 fork에는 VLM 연결 실험과 [PDF·JPEG 좌석도 실험](experiments/seatmap-pdf/experiment-guide.md), 영상 작업 자료가 함께 있습니다. 팀 제품 전체를 개인 단독 구현으로 뜻하지 않습니다.
+
+2026-10-26 로컬 확인: 앱·VLM 테스트 23개, 좌석도 Python 테스트 33개와 앱 빌드가 통과했습니다. 합성 입력·계약·검수 도구의 검사이며 실제 공연장 정확도 검증은 아닙니다.
+
 ## 바로 실행
 
 Node.js 20.19+ 또는 22.12+를 설치한 후:
 
 ```sh
-git clone https://github.com/PhrenO0/sightcheck-ai.git
+git clone https://github.com/liminal-cipher/sightcheck-ai.git
 cd sightcheck-ai
-npm install
+npm install --package-lock=false
 npm run build
 npm run demo
 npm start
@@ -37,14 +43,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\start.ps1
 코드를 수정할 때:
 
 ```sh
-npm install
+npm install --package-lock=false
 npm run prepare:ocr
 npm run dev
 npm test
 npm run build
 ```
 
-pnpm도 지원합니다. 개발 빌드는 Vite 8이 지원하는 Node 20.19+ 또는 22.12+를 사용하세요. `public/ocr`의 worker·WASM·영문 모델은 `prepare:ocr` 또는 `build`가 설치된 패키지에서 복사합니다. 인식할 때 사진을 외부 AI 서버에 전송하지 않습니다. 글꼴은 온라인에서 Noto Sans KR을 요청하며, 오프라인에서는 시스템 글꼴을 사용합니다.
+저장소에는 `pnpm-lock.yaml`이 있습니다. 잠긴 의존성으로 설치하려면 위 설치 명령 대신 `pnpm install --frozen-lockfile`을 사용하세요. npm 대안은 같은 의존성 트리를 보장하지 않으며, npm lockfile이 없으므로 `npm ci`는 사용할 수 없습니다. `public/ocr`의 worker·WASM·영문 모델은 `prepare:ocr` 또는 `build`가 설치된 패키지에서 복사합니다. 인식할 때 사진을 외부 AI 서버에 전송하지 않습니다. 글꼴은 온라인에서 Noto Sans KR을 요청하며, 오프라인에서는 시스템 글꼴을 사용합니다.
 
 ## 운영자 화면에서 게시하기
 
@@ -122,9 +128,9 @@ Blender는 런타임 의존성이 아닙니다. 현재 좌석·벽·무대·인�
 
 ## 실서비스 전에 필요한 작업
 
-실제 공연장 실측·자료 사용 허락, 대표 좌석 실사진 검증, 운영자 계정과 서버 데이터 저장, 공연별 모델 승인/배포, 티켓 플랫폼 계약 및 재고·좌석 ID 연동이 필요합니다. 앞사람·기둥·추가 세트 등 실제 가림 객체의 범위를 넓히고 현장 사진과 계산 결과의 오차를 측정해야 합니다. 서버 시야 이미지 렌더링/캐시, 360도 실사진, 사진 복원·Gaussian Splatting·LLM 상담은 이 버전의 구현 범위에 포함되지 않습니다.
+실제 공연장 실측·자료 사용 허락, 대표 좌석 실사진 검증, 다중 운영자 계정·권한과 백업·운영 체계, 티켓 플랫폼 계약 및 재고·좌석 ID 연동이 필요합니다. 단일 운영자용 서버 파일 저장·검수·게시 흐름은 구현돼 있습니다. 앞사람·기둥·추가 세트 등 실제 가림 객체의 범위를 넓히고 현장 사진과 계산 결과의 오차를 측정해야 합니다. 서버 시야 이미지 렌더링/캐시, 360도 실사진, 사진 복원·Gaussian Splatting·LLM 상담은 이 버전의 구현 범위에 포함되지 않습니다.
 
-AI 구현은 OCR입니다. 규칙 기반 시야 가이드를 LLM 답변으로 표시하지 않습니다. 업로드 사진에서 치수를 자동 생성하거나 실사진 인증을 주장하지 않습니다. 시제품에 계정·결제·다중 사용자 저장소는 없습니다. 변환/시야 계산 API는 Node 서버에서 요청만 처리하고 보관하지 않습니다.
+제품의 AI 구현은 OCR입니다. 규칙 기반 시야 가이드를 LLM 답변으로 표시하지 않습니다. 업로드 사진에서 치수를 자동 생성하거나 실사진 인증을 주장하지 않습니다. 시제품에는 토큰 기반 운영자 인증이 있지만 사용자 계정·결제·테넌트 격리는 없습니다. 변환/시야 계산 요청은 보관하지 않으며, 운영자 화면에서 저장한 모델·사진·검수·게시 기록은 서버 파일 저장소에 보관합니다.
 
 ## 소스 구성과 오픈소스
 
