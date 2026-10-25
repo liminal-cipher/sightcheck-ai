@@ -181,7 +181,7 @@ The local review page also passed a headless browser smoke test covering sample
 loading, applicable fields, navigation persistence, JSON export/import and crop
 loading. Synthetic smoke-test edits were isolated from the pending review data.
 
-The experiment code and sanitised reports are integrated into `main` under
+The experiment code and sanitized reports are integrated into `main` under
 `experiments/seatmap-pdf`, preserving the original experiment commits. Run the
 commands above from the main repository folder; a separate worktree is not
 required. Source PDF/JPEG files and prior outputs remain local and ignored.

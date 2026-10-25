@@ -145,7 +145,7 @@ def extract(pdf_path: Path) -> dict:
             "page_count": len(document),
             "page_size_pt": [page.rect.width, page.rect.height],
             "coordinate_system": (
-                "PDF page points, top-left origin; not physical seat centres "
+                "PDF page points, top-left origin; not physical seat centers "
                 "or metric coordinates"
             ),
             "extractor_scope": (

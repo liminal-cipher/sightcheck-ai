@@ -69,7 +69,7 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 | B. Human-reviewed fixture | rail: position `[0,2.9,8.0575]`, size `[8.75,1,0.1]`, layout `all` | VLM이 추출한 장애물이 아님 |
 | B. Human-reviewed fixture | tower: position `[-1.95,1.9,1.5]`, size `[1.05,2.6,0.65]`, layout `concert` | 모델에 포함되지만 이번 C3 theatre 계산에서는 제외 |
 | B. Human-reviewed fixture | name, inputType, rightsConfirmed, positionsReviewed, measurementsReviewed | 이 합성 샘플을 위한 기존 fixture의 선언을 복사. 새 현장 검수나 일반 VLM 자동 승인으로 해석하지 않음 |
-| C. 기존 엔진 | metre/pixel `0.016666666666666666`, 좌석 x/z, schema 2 model, camera, sightline | convertPlan, model.js 및 기존 viewer 메서드 실행 결과 |
+| C. 기존 엔진 | meter/pixel `0.016666666666666666`, 좌석 x/z, schema 2 model, camera, sightline | convertPlan, model.js 및 기존 viewer 메서드 실행 결과 |
 | C. 기존 엔진 상수/기본값 | 눈높이 1.2m, FOV 60°, 무대 전면 z=-0.25, 표본 25×13, target의 +0.08m, price 0, 공통 외관 | 실측 또는 AI 추출값이 아님. 기본 모델에서 유지되는 스타일·보조 필드도 재구성 증거가 아님 |
 | D. 새 adapter/glue | 필드 이름 변경, row A–D → 0–3, 좌석명 기반 fixture join, 허용 필드만 복사 | metric 계산 및 sightline 알고리즘을 새로 구현하지 않음 |
 | D. 새 adapter/glue | axis-aligned stage bbox의 아래쪽 두 모서리 → stageLeft `[242,110]`, stageRight `[758,110]` | 이 샘플의 객석 방향(+1)과 도면을 확인해 정한 규칙; 회전 도면·일반 polygon 지원이 아님 |
