@@ -33,7 +33,7 @@ npx --yes hyperframes@0.8.137 render --fps 30 --quality delivery --workers 2 --o
 ```
 
 Rebuild source composition and score: `python scripts/build.py`.
-Fresh UI capture requires repository Vite on port 4178 with SIGHTCHECK_DATA_DIR set to this project's capture/demo-data, then run capture scripts from the repository root. Existing video/node_modules/playwright-core is reused read-only; it is needed only to recapture, not to preview/render frozen assets.
+Fresh UI capture requires repository Vite on port 4178 with `SIGHTCHECK_DATA_DIR` set to this project's `capture/demo-data`, then run capture scripts from the repository root. Existing `media/promo-video/node_modules/playwright-core` is reused read-only; it is needed only to recapture, not to preview/render frozen assets.
 
 ## Encoded output verified
 58.000 seconds; 1920×1080 H.264; 30/1 fps; 1740 frames; AAC stereo at 48kHz; 11,887,665 bytes. Render path: hardware GPU screenshot capture, HyperFrames deterministic seek, 2 workers. Runtime 68 seconds. Final encoded frame at 57.5s inspected; end card held correctly. Audio non-silent, mean -33.2dB / peak -16.2dB (restrained bed; human loudness review recommended).

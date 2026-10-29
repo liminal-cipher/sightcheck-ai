@@ -1,5 +1,5 @@
 // 레포 루트를 정적으로 서비스한다. 영상 페이지: http://127.0.0.1:4300/media/promo-video/
-// (영상 페이지가 ../src/scene.js와 node_modules/three를 직접 불러오기 때문에 루트를 연다)
+// (영상 모듈이 저장소 루트의 src/scene.js와 node_modules/three를 불러오기 때문에 루트를 연다)
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';

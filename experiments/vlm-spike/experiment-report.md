@@ -29,16 +29,16 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 
 | 검증 | 실제 결과 |
 | --- | --- |
-| VLM 좌석이 변환 입력에 포함 | A1–D5, 중복 없는 20석; 모든 label·xPx·yPx를 VLM 원본과 대조 |
-| 변환 모델 | schemaVersion 2, 20석의 유한한 x·floor·z 생성 |
-| 좌석별 camera | 20개 position·target 생성 |
-| 기존 viewer camera 코드 | 20석에 실제 `PerspectiveCamera`와 `positionCamera` 실행; API position·시선 방향·FOV 일치 |
+| VLM 좌석이 변환 입력에 포함 | A1–D5, 중복 없는 20석; 모든 `label`·`xPx`·`yPx`를 VLM 원본과 대조 |
+| 변환 모델 | `schemaVersion` 2, 20석의 유한한 `x`·`floor`·`z` 생성 |
+| 좌석별 camera | 20개 `position`·`target` 생성 |
+| 기존 viewer camera 코드 | 20석에 실제 `PerspectiveCamera`와 `positionCamera` 실행; API `position`·시선 방향·FOV 일치 |
 | C3 계산 | theatre, 눈높이 1.2m, 325개 표본 |
 | C3 위치 | 바닥 기준 `[x,y,z] = [0,2.4,8.8]`m |
-| C3 camera | position `[0,3.5999999999999996,8.8]`, target `[0,1.88,-0.25]`, vertical FOV 60° |
-| C3 sightline | visible 69%, lowerVisible 20%, 난간에 가린 표본 100개; distance 문자열 `9.1`, angle 0° |
+| C3 camera | `position` `[0,3.5999999999999996,8.8]`, `target` `[0,1.88,-0.25]`, vertical FOV 60° |
+| C3 sightline | `visible` 69%, `lowerVisible` 20%, 난간에 가린 표본 100개; `distance` 문자열 `9.1`, `angle` 0° |
 | 모델 검수 상태 | `needs_site_review` 유지 |
-| 기존 Three.js UI의 실제 렌더링 | 사용자가 viewer.html에서 생성 모델을 적용하고 C3 1인칭 WebGL 장면·전면 난간 표시를 확인; 눈높이 1.20m, visible 69%, lowerVisible 20%, 무대 전면 거리 9.1m |
+| 기존 Three.js UI의 실제 렌더링 | 사용자가 `viewer.html`에서 생성 모델을 적용하고 C3 1인칭 WebGL 장면·전면 난간 표시를 확인; 눈높이 1.20m, `visible` 69%, `lowerVisible` 20%, 무대 전면 거리 9.1m |
 
 가시 비율은 이 fixture의 무대 전면 표본에 대한 geometry 계산이며 실제 공연장 관람 품질의 정확도가 아니다. camera의 부동소수점 원시 값은 결과 JSON 그대로 기록했다. `floor`는 fixture에서 복사한 바닥 높이이고 엔진이 높이를 추론한 것이 아니다.
 
@@ -53,8 +53,8 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 - fixture 좌석 순서를 뒤집고 모든 좌석 pixel·행 및 무대 pixel 기준점을 잘못된 값으로 바꿔도 결과가 같음을 테스트했다. adapter는 fixture pixel/row를 읽지 않고 실측 데이터를 좌석명으로 결합한다.
 - VLM C3 x를 60px 이동시키면 기존 엔진의 C3 x와 camera x가 1m 이동함을 확인했다.
 - VLM 무대 영역의 전면 y를 60px 이동시키면 C3 z가 1m 감소함을 확인했다.
-- VLM에 가짜 floorM·section·stage depth·obstacle 값을 넣어도 결과에 반영되지 않음을 확인했다.
-- 필요한 human floorM 누락, 미등록 좌석, railing의 별도 schema/이미지 크기는 실패하도록 확인했다.
+- VLM에 가짜 `floorM`·section·stage depth·obstacle 값을 넣어도 결과에 반영되지 않음을 확인했다.
+- 필요한 human `floorM` 누락, 미등록 좌석, railing의 별도 schema/이미지 크기는 실패하도록 확인했다.
 
 이 변경값들은 입력 의존성 검증용 테스트이며 원본 VLM 결과나 저장된 변환 결과를 수정한 것이 아니다.
 
@@ -62,17 +62,17 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 
 | 구분 | 데이터 | 출처 / 처리 |
 | --- | --- | --- |
-| A. VLM 이미지 추출 | seat_number A1–D5, center_px, row A–D | base VLM JSON에서 읽음; section null과 certainty는 metric/검수 사실로 사용하지 않음 |
-| A. VLM 이미지 추출 | stage.region_px `[242,20]–[758,110]` | 이 영역의 pixel 정보를 실제 calibration 입력에 사용; center_px `[500,65]`는 API가 요구하지 않아 사용하지 않음 |
-| B. Human-reviewed fixture | 좌석 floorM, section | engine-demo.json에서 좌석명으로 결합. A/B/C/D 높이 각각 0/0.24/2.4/3.05m; A·B 1층, C·D 2층 |
-| B. Human-reviewed fixture | stageWidthM 8.6, depthM 3.6, heightM 0.6, targetHeightM 2.4, audienceSide 1 | 모두 fixture 제공. 이미지에 폭/축척 문자가 있더라도 이 실험의 metric 출처는 fixture |
-| B. Human-reviewed fixture | rail: position `[0,2.9,8.0575]`, size `[8.75,1,0.1]`, layout `all` | VLM이 추출한 장애물이 아님 |
-| B. Human-reviewed fixture | tower: position `[-1.95,1.9,1.5]`, size `[1.05,2.6,0.65]`, layout `concert` | 모델에 포함되지만 이번 C3 theatre 계산에서는 제외 |
-| B. Human-reviewed fixture | name, inputType, rightsConfirmed, positionsReviewed, measurementsReviewed | 이 합성 샘플을 위한 기존 fixture의 선언을 복사. 새 현장 검수나 일반 VLM 자동 승인으로 해석하지 않음 |
-| C. 기존 엔진 | meter/pixel `0.016666666666666666`, 좌석 x/z, schema 2 model, camera, sightline | convertPlan, model.js 및 기존 viewer 메서드 실행 결과 |
+| A. VLM 이미지 추출 | `seat_number` A1–D5, `center_px`, `row` A–D | base VLM JSON에서 읽음; `section` `null`과 certainty는 metric/검수 사실로 사용하지 않음 |
+| A. VLM 이미지 추출 | `stage.region_px` `[242,20]–[758,110]` | 이 영역의 pixel 정보를 실제 calibration 입력에 사용; `center_px` `[500,65]`는 API가 요구하지 않아 사용하지 않음 |
+| B. Human-reviewed fixture | 좌석 `floorM`, `section` | `engine-demo.json`에서 좌석명으로 결합. A/B/C/D 높이 각각 0/0.24/2.4/3.05m; A·B 1층, C·D 2층 |
+| B. Human-reviewed fixture | `stageWidthM` 8.6, `depthM` 3.6, `heightM` 0.6, `targetHeightM` 2.4, `audienceSide` 1 | 모두 fixture 제공. 이미지에 폭/축척 문자가 있더라도 이 실험의 metric 출처는 fixture |
+| B. Human-reviewed fixture | rail: `position` `[0,2.9,8.0575]`, `size` `[8.75,1,0.1]`, `layout` `all` | VLM이 추출한 장애물이 아님 |
+| B. Human-reviewed fixture | tower: `position` `[-1.95,1.9,1.5]`, `size` `[1.05,2.6,0.65]`, `layout` `concert` | 모델에 포함되지만 이번 C3 theatre 계산에서는 제외 |
+| B. Human-reviewed fixture | `name`, `inputType`, `rightsConfirmed`, `positionsReviewed`, `measurementsReviewed` | 이 합성 샘플을 위한 기존 fixture의 선언을 복사. 새 현장 검수나 일반 VLM 자동 승인으로 해석하지 않음 |
+| C. 기존 엔진 | meter/pixel `0.016666666666666666`, 좌석 x/z, schema 2 model, camera, sightline | `convertPlan`, `model.js` 및 기존 viewer 메서드 실행 결과 |
 | C. 기존 엔진 상수/기본값 | 눈높이 1.2m, FOV 60°, 무대 전면 z=-0.25, 표본 25×13, target의 +0.08m, price 0, 공통 외관 | 실측 또는 AI 추출값이 아님. 기본 모델에서 유지되는 스타일·보조 필드도 재구성 증거가 아님 |
 | D. 새 adapter/glue | 필드 이름 변경, row A–D → 0–3, 좌석명 기반 fixture join, 허용 필드만 복사 | metric 계산 및 sightline 알고리즘을 새로 구현하지 않음 |
-| D. 새 adapter/glue | axis-aligned stage bbox의 아래쪽 두 모서리 → stageLeft `[242,110]`, stageRight `[758,110]` | 이 샘플의 객석 방향(+1)과 도면을 확인해 정한 규칙; 회전 도면·일반 polygon 지원이 아님 |
+| D. 새 adapter/glue | axis-aligned stage bbox의 아래쪽 두 모서리 → `stageLeft` `[242,110]`, `stageRight` `[758,110]` | 이 샘플의 객석 방향(+1)과 도면을 확인해 정한 규칙; 회전 도면·일반 polygon 지원이 아님 |
 | D. 새 harness | 실제 PNG 헤더의 1000×930, HTTP 호출, 검증, SHA-256 및 JSON 저장 | 파일 메타데이터와 실행 bookkeeping; VLM 추출값이 아님 |
 
 `engine-demo.json`은 요청에 따라 human-reviewed measurement fixture로 사용했다. 도면에는 **SYNTHETIC PLAN / NOT A REAL VENUE**가 명시되어 있어 실제 현장에서 측량했다는 증거로 취급하지 않는다. base JSON의 `obstacles: []`는 장애물 부재의 증거가 아니다. 최종 모델의 두 장애물은 전적으로 fixture가 제공했다.
@@ -92,10 +92,10 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 
 `railing-plan.png`와 `railing-vlm-output.json`을 직접 확인했다. 이미지 크기는 **1254×1254**로 base의 **1000×930**과 다르다. 이 JSON은 `center_pixel`/`area_pixel`이라는 별도 schema를 쓴다.
 
-- A1–D5 20석을 seat_number, center_pixel, row로 구조화했다. 좌석 section은 모두 null이다.
+- A1–D5 20석을 `seat_number`, `center_pixel`, `row`로 구조화했다. 좌석 section은 모두 null이다.
 - `type: balcony_rail`, `label: BALCONY RAIL`인 obstacle 후보 1개를 기록했다.
 - 2D 영역은 x=355–899, y=740–775px이다. 이미지에서 B행과 C행 사이 난간 도형과 그 아래 라벨을 직접 확인했다. 영역은 난간 도형에 해당하며 라벨 글자 전체를 포함하는 영역은 아니다.
-- obstacle 필드는 type, label, area_pixel, certainty, notes뿐이다. 실제 높이·깊이·3D position/size 값은 생성하지 않았다. notes도 실제 높이·깊이·시야 차단 정도를 이미지에서 확인할 수 없다고 명시한다.
+- obstacle 필드는 `type`, `label`, `area_pixel`, `certainty`, `notes`뿐이다. 실제 높이·깊이·3D `position`/`size` 값은 생성하지 않았다. notes도 실제 높이·깊이·시야 차단 정도를 이미지에서 확인할 수 없다고 명시한다.
 - 무대에도 pixel 영역과 중심만 있고 metric 치수는 없다. certainty의 “확실”은 VLM의 자기 보고이며 정확도 인증이 아니다.
 - 이 샘플의 좌표는 fixture와 결합하지 않았고 convert에도 전달하지 않았다. 이미지에 인쇄된 축척 문자열도 base와 같은 metric 좌표계라는 근거로 사용하지 않았다.
 
@@ -122,7 +122,7 @@ experiments/vlm-spike/fixtures/base-vlm-output.json
 
 ### 기존 파일
 
-추적 중인 기존 제품 파일 변경 없음. 기존 `src/`, `server/`, `tests/`, package.json과 OCR 코드는 수정하지 않았다. 빌드가 재작성한 `public/licenses/` 5개 파일은 원래 상태로 복원했다. 시작 시 이미 untracked였던 사용자 제공 `scripts/experiments/vlm-spike/`의 `base-vlm-output.json`, `railing-plan.png`, `railing-vlm-output.json`은 내용 변경 없이 실험 재현 입력으로 포함한다. push는 하지 않는다.
+추적 중인 기존 제품 파일 변경 없음. 기존 `src/`, `server/`, `tests/`, `package.json`과 OCR 코드는 수정하지 않았다. 빌드가 재작성한 `public/licenses/` 5개 파일은 원래 상태로 복원했다. 시작 시 이미 untracked였던 사용자 제공 `scripts/experiments/vlm-spike/`의 `base-vlm-output.json`, `railing-plan.png`, `railing-vlm-output.json`은 내용 변경 없이 실험 재현 입력으로 포함한다. push는 하지 않는다.
 
 로컬 작업 추적용 `CURRENT_TASK.md`를 생성하고 `.git/info/exclude`에 `/CURRENT_TASK.md`를 추가했다. 이는 제품 소스 변경이나 제출 산출물이 아니다. 설치/빌드 결과 `node_modules/`, `dist/`, `public/ocr/`는 기존 ignore 대상이다.
 
@@ -172,4 +172,4 @@ npm run dev -- --port 4174
 # http://127.0.0.1:4174/experiments/vlm-spike/viewer.html
 ```
 
-페이지의 “VLM spike 모델을 기존 화면에 적용”을 클릭한다. import는 기존 앱과 동일하게 이 origin의 localStorage 모델을 저장하므로 기존 작업용 origin과 분리된 포트를 권장한다. 적용 후 화면 표시와 렌더링을 직접 확인해야 하며, 모델 적용 버튼의 성공 메시지만으로 WebGL 성공을 판단하지 않는다.
+페이지의 “VLM spike 모델을 기존 화면에 적용”을 클릭한다. import는 기존 앱과 동일하게 이 origin의 `localStorage` 모델을 저장하므로 기존 작업용 origin과 분리된 포트를 권장한다. 적용 후 화면 표시와 렌더링을 직접 확인해야 하며, 모델 적용 버튼의 성공 메시지만으로 WebGL 성공을 판단하지 않는다.

@@ -23,9 +23,9 @@
 
 디자인 원칙: 좌석도가 구매의 중심이고 3D는 판단을 돕는 레이어다. 3D 전체화면 진입을 강제하지 않는다. 가격·가림·검증 상태는 색상만으로 구분하지 않고 문구·아이콘을 함께 쓴다. 모바일에서는 좌석도 위, 비교 패널 아래의 시트 형태로 배치한다. ‘검증되지 않은 자리’에 정밀한 수치 점수를 표시하지 않는다.
 
-별도 파일 `시야체크_AI_예약_UX_개념도.png`는 이 A/B 비교 흐름의 **가상 데이터 시안**이다. 실제 경기장·공연장 모델, 실시간 가격·재고, 실측 시야 또는 제휴를 나타내지 않는다. 공식 공고에서 허용한 선택 시각자료 ZIP으로도 묶어 두었다.
+[예약 UX 개념도](../images/booking-ux-concept.png)는 이 A/B 비교 흐름의 **가상 데이터 시안**이다. 실제 경기장·공연장 모델, 실시간 가격·재고, 실측 시야 또는 제휴를 나타내지 않는다. 공식 공고에서 허용한 선택 시각자료 ZIP으로도 묶어 두었다.
 
-`oh-my-design`에는 동명이 계열이 있다. [3x-haust/oh-my-design](https://github.com/3x-haust/oh-my-design)은 UI 제작의 검토·렌더링 프로세스이며, [kwakseongjae/oh-my-design](https://github.com/kwakseongjae/oh-my-design)은 디자인 시스템 참고 자료다. 둘 다 좌석 예매 컴포넌트 자체가 아니다. [react-seat-picker](https://github.com/roggervalf/react-seat-picker)는 간단한 좌석 선택 컴포넌트의 참고 후보이고, [SeatLayer 예제](https://github.com/seatlayer/seatlayer-react-example)는 임시 점유·결제 인계 흐름의 참고 자료지만 좌석맵 엔진은 별도 호스팅 서비스다.
+`oh-my-design`에는 동명의 프로젝트가 있다. [3x-haust/oh-my-design](https://github.com/3x-haust/oh-my-design)은 UI 제작의 검토·렌더링 프로세스이며, [kwakseongjae/oh-my-design](https://github.com/kwakseongjae/oh-my-design)은 디자인 시스템 참고 자료다. 둘 다 좌석 예매 컴포넌트 자체가 아니다. [react-seat-picker](https://github.com/roggervalf/react-seat-picker)는 간단한 좌석 선택 컴포넌트의 참고 후보이고, [SeatLayer 예제](https://github.com/seatlayer/seatlayer-react-example)는 임시 점유·결제 인계 흐름의 참고 자료지만 좌석맵 엔진은 별도 호스팅 서비스다.
 
 ## 3D 제작 기술 비교와 권장 조합
 
@@ -38,7 +38,7 @@
 
 권장 제작 파이프라인: (1) 운영자에게 좌석 배치도와 좌석 간격·단차·난간 높이·무대 위치 등 기준 치수를 받는다. (2) PaddleOCR로 행·열을 읽고 SAM 2로 운영자가 지목한 구조물의 윤곽을 얻는다. (3) Three.js에서 [InstancedMesh](https://threejs.org/docs/pages/InstancedMesh.html)로 반복 좌석을 배치하고 난간·무대는 간단한 도형으로 모델링한다. (4) 공통 모델에서 좌석 카메라만 이동해 시야를 보여주고 무대 핵심 영역까지 광선을 쏴 가림을 판정한다. (5) 재질·음영을 보강하고, 성능이 낮은 기기에만 요청된 좌석의 이미지를 제공·캐시한다. (6) 대표 좌석 실제 사진과 대조해 ‘검증’ 배지를 발급한다. 다각도 사진·치수가 확보된 공연장에만 VGGT/COLMAP 공간 복원이나 Blender 자산 편집을 후속 적용한다.
 
-**2D 이미지 + Three.js의 정확한 역할:** 좌석도 스크린샷은 구역·행·열의 **평면 좌표 초안**이다. 실제 좌석 간격·열 단차·난간 높이·무대 치수를 별도로 넣어야 3D 시야 판정을 할 수 있다. 블록 프리비즈처럼 반복 좌석과 장애물을 Three.js 도형으로 만들면 초기 제품에 Blender가 필수는 아니다. 다수의 좌석을 개별 메시로 그리기보다 InstancedMesh로 묶어 렌더링 비용을 줄인다. [Blender의 이미지 평면 기능](https://docs.blender.org/manual/de/4.2/modeling/meshes/import_images_as_planes.html)은 텍스처를 붙이는 기능이지 사진을 정확한 입체 공간으로 변환하는 기능은 아니다.
+**2D 이미지 + Three.js의 정확한 역할:** 좌석도 스크린샷은 구역·행·열의 **평면 좌표 초안**이다. 실제 좌석 간격·열 단차·난간 높이·무대 치수를 별도로 넣어야 3D 시야 판정을 할 수 있다. 블록 프리비즈처럼 반복 좌석과 장애물을 Three.js 도형으로 만들면 초기 제품에 Blender가 필수는 아니다. 다수의 좌석을 개별 메시로 그리기보다 `InstancedMesh`로 묶어 렌더링 비용을 줄인다. [Blender의 이미지 평면 기능](https://docs.blender.org/manual/de/4.2/modeling/meshes/import_images_as_planes.html)은 텍스처를 붙이는 기능이지 사진을 정확한 입체 공간으로 변환하는 기능은 아니다.
 
 시연 우선순위는 **좌석도 1장 + 실측 치수 + Three.js 구조 모델 + 실제 좌석 사진 검증**이다. 광범위한 사진 측량, Blender의 정교한 자산 제작, Gaussian Splatting은 자료가 확보된 다음 단계다. 이 조합이 제작 범위와 시야 정확도를 통제하면서도 공연별 무대 변경을 보여주기에 가장 적합하다.
 
