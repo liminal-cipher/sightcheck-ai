@@ -130,6 +130,21 @@ deliberately removed seats can look like missing detections. No gap candidates
 were found with the current conservative one-cell-gap thresholds; that is not
 evidence of perfect detection recall.
 
+## PDF block overlays
+
+For a whole-layout check of PDF block assignment, render one image per layout
+from the saved `theatre-1/<layout>/seats.json` results. The original PDFs are
+opened read-only; images go to `output/phase-abc/block-overlays/`:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/render_block_overlay.py
+```
+
+Each seat text box is filled with its assigned block's color and each block
+region is outlined in the same color; unmatched seats get a thick red outline.
+A reviewer checks that no box contains a seat of another color. This covers
+block assignment only, not seat text reading or physical seat positions.
+
 ## Manual review
 
 To refresh only the review screen and PDF/JPEG context images from existing results
