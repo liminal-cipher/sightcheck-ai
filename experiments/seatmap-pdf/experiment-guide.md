@@ -145,6 +145,30 @@ region is outlined in the same color; unmatched seats get a thick red outline.
 A reviewer checks that no box contains a seat of another color. This covers
 block assignment only, not seat text reading or physical seat positions.
 
+## JPEG reading comparison
+
+Blind labels come first so they can score both readers. This page draws a
+seeded random subset of the JPEG review samples and hides every prediction:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_blind_review.py --count 30
+```
+
+Save the page's JSON as `output/phase-abc/blind-review-result.json`. Model
+readings go in `output/phase-abc/subagent-preread/result-*.json`, one array per
+file with `sample_id`, `is_seat`, `zone`, `row`, `number`, `confidence` and
+`note`. Then score both readers on the blind labels and build the queue:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/compare_readings.py
+& $seatmapPython experiments/seatmap-pdf/make_queue_review.py --model-only 20
+```
+
+`compare_readings.py` scores only blind-labeled items. Other items are routed
+to the queue when the OCR and model readings differ, plus seeded spot checks of
+agreements. The queue page shows both readings, so its verdicts confirm data
+but are not accuracy measurements.
+
 ## Manual review
 
 To refresh only the review screen and PDF/JPEG context images from existing results
