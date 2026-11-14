@@ -171,6 +171,19 @@ file with `sample_id`, `is_seat`, `zone`, `row`, `number`, `confidence` and
 & $seatmapPython experiments/seatmap-pdf/make_queue_review.py --model-only 20
 ```
 
+To compare other readers on only the human-confirmed items, list their sample
+IDs in a text file, pass it with `--only` and a separate `--dest` per reader,
+then score each reader folder:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_preread_manifests.py --only experiments/seatmap-pdf/output/phase-abc/labelled-ids.txt --parts 4 --dest experiments/seatmap-pdf/output/phase-abc/subagent-sonnet
+& $seatmapPython experiments/seatmap-pdf/score_readers.py opus=subagent-preread sonnet=subagent-sonnet
+```
+
+`score_readers.py` reports blind labels as the primary score and queue
+verdicts separately, because queue verdicts were given with a model reading
+visible.
+
 `compare_readings.py` scores only blind-labeled items. Other items are routed
 to the queue when the OCR and model readings differ, plus seeded spot checks of
 agreements. The queue page shows both readings, so its verdicts confirm data

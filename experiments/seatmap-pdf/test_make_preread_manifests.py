@@ -12,6 +12,12 @@ class PrereadManifestTest(unittest.TestCase):
         self.assertEqual(sorted(flat), [f's{i:02d}' for i in range(23)])
         self.assertEqual(parts, split(review, 10, 7))
 
+    def test_only_restricts_split_and_rejects_unknown_ids(self):
+        review = {'samples': [{'sample_id': f's{i}', 'unit': 'px'} for i in range(5)]}
+        self.assertEqual(sorted(x for part in split(review, 2, 7, {'s1', 's3'}) for x in part), ['s1', 's3'])
+        with self.assertRaises(ValueError):
+            split(review, 2, 7, {'s1', 'missing'})
+
     def test_template_fills_both_paths(self):
         text = render(load_template(), 'M.json', 'R.json')
         self.assertIn('Open ONLY this manifest: M.json', text)
