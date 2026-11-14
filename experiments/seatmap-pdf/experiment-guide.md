@@ -154,8 +154,15 @@ seeded random subset of the JPEG review samples and hides every prediction:
 & $seatmapPython experiments/seatmap-pdf/make_blind_review.py --count 30
 ```
 
-Save the page's JSON as `output/phase-abc/blind-review-result.json`. Model
-readings go in `output/phase-abc/subagent-preread/result-*.json`, one array per
+Save the page's JSON as `output/phase-abc/blind-review-result.json`. To split
+the samples for model readers and render one prompt per part from
+`prompts/seat-reader.md` (seed 7, ten parts, as in the 2026-11-14 run):
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_preread_manifests.py
+```
+
+Model readings go in `output/phase-abc/subagent-preread/result-*.json`, one array per
 file with `sample_id`, `is_seat`, `zone`, `row`, `number`, `confidence` and
 `note`. Then score both readers on the blind labels and build the queue:
 

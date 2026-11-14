@@ -99,7 +99,8 @@ def compare(review, blind, model, spot_checks, seed):
         'agreements': len(agreed),
         'agreement_spot_checks': len(spot),
         'limits': ['Blind subset is a random draw from purposive (hard-case-heavy) samples, not the whole plan.',
-                   'Model readings came from Claude Code subagents without a fixed effort setting.'],
+                   'Model readings came from Claude Code subagents (Opus 5.5, effort high from the '
+                   'Claude Code default), not direct API calls; see prompts/seat-reader.md.'],
     }
     return {'summary': summary, 'scored': scored, 'review_queue': queue, 'spot_checks': spot}
 
