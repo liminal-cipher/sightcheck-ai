@@ -197,6 +197,31 @@ answer. Use a new `--name` so the first set's files stay untouched:
 Save that page's JSON as `output/phase-abc/blind2-review-result.json`. Each
 blind set is scored separately because the sets were drawn differently.
 
+### Claude API runs
+
+`claude_preread.py` sends one request per item with
+`prompts/seat-reader-api.md`, an explicit model and effort, adaptive thinking
+and a JSON schema for the answer. It writes `result-01.json` into the run
+folder, so `score_readers.py` can score it like a subagent folder. `plan`
+needs no API key and sends nothing; it prints an upper cost estimate and saves
+`request-preview.json`. A run folder is tied to its settings in `run.json`, so
+another model or effort needs another `--name`.
+
+```powershell
+& $seatmapPython -m pip install -r experiments/seatmap-pdf/api-requirements.txt
+& $seatmapPython experiments/seatmap-pdf/claude_preread.py plan --name api-opus-high --model opus --effort high --ids experiments/seatmap-pdf/output/phase-abc/blind2-review-samples.json
+# With ANTHROPIC_API_KEY set: half price, usually finished within an hour.
+& $seatmapPython experiments/seatmap-pdf/claude_preread.py submit --name api-opus-high --model opus --effort high --ids experiments/seatmap-pdf/output/phase-abc/blind2-review-samples.json
+& $seatmapPython experiments/seatmap-pdf/claude_preread.py collect --name api-opus-high
+& $seatmapPython experiments/seatmap-pdf/score_readers.py --blind blind-review-result.json --blind blind2-review-result.json opus-api=api-opus-high
+```
+
+`run` sends the same requests directly instead of as a batch, skipping items
+that already have an answer. `submit` and `run` refuse to send when the upper
+estimate is above `--max-cost` (USD 10 by default). The estimate counts images
+at full size, so real costs are usually lower; `collect` and `run` print the
+measured token usage.
+
 `compare_readings.py` scores only blind-labeled items. Other items are routed
 to the queue when the OCR and model readings differ, plus seeded spot checks of
 agreements. The queue page shows both readings, so its verdicts confirm data
