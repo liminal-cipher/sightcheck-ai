@@ -233,6 +233,41 @@ to the queue when the OCR and model readings differ, plus seeded spot checks of
 agreements. The queue page shows both readings, so its verdicts confirm data
 but are not accuracy measurements.
 
+### Structure check
+
+`check_seatmap.py` flags readings that contradict the plan itself, so a
+reviewer only needs to open the flagged cells of a full-map reading. It needs
+no ground truth. Cell positions come from the CV shape detection in
+`<theatre>/seats.json`; only gray seat cells are checked, not blue wheelchair
+regions. Readings come from sources in priority order (a reading folder,
+`ocr`, `labels`), and the checks are:
+
+- no ID appears twice;
+- numbers run in order along each row (or down each BOX column);
+- touching cells differ by the row's usual step;
+- each cell sits on its row's line;
+- row letters run down the page;
+- the seat count matches the legend, when `--expect` gives it;
+- with `--compare ocr`, the OCR reading agrees wherever both readers answered.
+
+For an unseen plan the primary source is a full model reading. `labels` holds
+the experiment's human labels; in a review workflow the reviewer's corrections
+take that place and are re-checked against the rest of the map. Leave it out
+when measuring the checker, because labeled cells cannot raise flags.
+
+`--inject N` plants N realistic single errors (look-alike digits, neighboring
+numbers, neighboring row letters), one at a time, and reports how many raise a
+structural flag on the planted cell:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source subagent-preread --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244 --inject 300
+```
+
+The legend counts are gray seat cells only: theatre 2 lists 466 regular and 40
+OP seats, theatre 3 lists 244 regular seats; wheelchair seats are blue regions
+and are not counted here. The report goes to
+`output/phase-abc/structure-check.json` (`--name` changes the file stem).
+
 ## Manual review
 
 To refresh only the review screen and PDF/JPEG context images from existing results
