@@ -184,6 +184,19 @@ then score each reader folder:
 verdicts separately, because queue verdicts were given with a model reading
 visible.
 
+A second blind set skips the items already labeled and fixes how many items
+come from each OCR sampling category, so rare cells such as BOX seats are
+represented. The categories come from the OCR stratum, never from a reader's
+answer. Use a new `--name` so the first set's files stay untouched:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_blind_review.py --name blind2 --seed 20261115 --exclude experiments/seatmap-pdf/output/phase-abc/labelled-ids.txt --quota BOX-1=7 --quota BOX-2=7 --quota blue-region=1 --quota row_or_zone_unresolved=7 --quota number_ocr_uncertain=9 --quota main=9
+& $seatmapPython experiments/seatmap-pdf/score_readers.py --blind blind-review-result.json --blind blind2-review-result.json opus=subagent-preread
+```
+
+Save that page's JSON as `output/phase-abc/blind2-review-result.json`. Each
+blind set is scored separately because the sets were drawn differently.
+
 `compare_readings.py` scores only blind-labeled items. Other items are routed
 to the queue when the OCR and model readings differ, plus seeded spot checks of
 agreements. The queue page shows both readings, so its verdicts confirm data

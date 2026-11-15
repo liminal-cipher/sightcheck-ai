@@ -7,19 +7,48 @@ from pathlib import Path
 import argparse
 import json
 import random
+import re
 
 BASE = Path(__file__).resolve().parent
-# Shared with claude_preread.py so human and model labels are directly comparable.
+# claude_preread.py and the reader prompts use these zones plus 'unknown', so human
+# and model labels are directly comparable.
 ZONES = ['main', 'BOX-1', 'BOX-2', 'OP', 'other']
 
 
-def select_samples(review, count, seed):
-    pool = sorted((s for s in review['samples'] if s['unit'] == 'px'), key=lambda s: s['sample_id'])
-    if count > len(pool):
-        raise ValueError(f'Requested {count} samples but only {len(pool)} JPEG samples exist')
-    chosen = random.Random(seed).sample(pool, count)
-    return [{'sample_id': s['sample_id'], 'document': s['document'], 'source_sha256': s['source_sha256'],
-             'crop': s['crop'], 'context': f"review-contexts/{s['sample_id']}.png"} for s in chosen]
+def category(stratum):
+    """Collapse the sampling stratum (band-N-<reason>) to its reason, e.g. BOX-1 or main."""
+    if stratum.startswith('blue-region'):
+        return 'blue-region'
+    return re.sub(r'^band-\d+-', '', stratum)
+
+
+def _entry(s):
+    return {'sample_id': s['sample_id'], 'document': s['document'], 'source_sha256': s['source_sha256'],
+            'crop': s['crop'], 'context': f"review-contexts/{s['sample_id']}.png"}
+
+
+def select_samples(review, count, seed, exclude=frozenset(), quotas=None):
+    """Seeded draw of JPEG samples, skipping already-labelled IDs.
+
+    With quotas ({category: n}) the draw is stratified by the OCR sampling
+    stratum, never by a reader's answer, so rare cells such as BOX seats are
+    represented; count is then ignored.
+    """
+    pool = sorted((s for s in review['samples'] if s['unit'] == 'px' and s['sample_id'] not in exclude),
+                  key=lambda s: s['sample_id'])
+    rng = random.Random(seed)
+    if quotas is None:
+        if count > len(pool):
+            raise ValueError(f'Requested {count} samples but only {len(pool)} JPEG samples exist')
+        return [_entry(s) for s in rng.sample(pool, count)]
+    chosen = []
+    for name, n in quotas.items():
+        group = [s for s in pool if category(s['stratum']) == name]
+        if n > len(group):
+            raise ValueError(f'Requested {n} {name} samples but only {len(group)} are available')
+        chosen += rng.sample(group, n)
+    rng.shuffle(chosen)
+    return [_entry(s) for s in chosen]
 
 
 PAGE = '''<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>좌석 블라인드 검토</title>
@@ -59,7 +88,7 @@ for(const f of fields)$(f).value=s.label[f]??'';$('done').checked=s.label.status
 function progress(){const n=data.samples.filter(x=>x.label.status==='reviewed').length;$('progress').textContent=`검토 완료 ${n} / ${data.samples.length}`;}
 function save(){const l={status:$('done').checked?'reviewed':'pending'};for(const f of fields){const v=$(f).value.trim();if(v)l[f]=v;}data.samples[i].label=l;}
 $('form').oninput=()=>{save();progress()};$('form').onchange=()=>{save();progress()};$('prev').onclick=()=>{save();i=Math.max(0,i-1);show()};$('next').onclick=()=>{save();i=Math.min(data.samples.length-1,i+1);show()};
-$('export').onclick=()=>{save();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='blind-review-result.json';a.click();};
+$('export').onclick=()=>{save();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='__NAME__-review-result.json';a.click();};
 $('import').onchange=async e=>{try{const t=JSON.parse(await e.target.files[0].text());const m=new Map(t.samples.map(s=>[s.sample_id,s]));
 for(const s of data.samples){const p=m.get(s.sample_id);if(!p||p.source_sha256!==s.source_sha256)throw Error('표본 목록이 일치하지 않습니다.');}
 for(const s of data.samples)s.label=m.get(s.sample_id).label;$('error').textContent='';show();}catch(err){$('error').textContent=err.message}};
@@ -67,14 +96,23 @@ show();
 </script></html>'''
 
 
-def write_page(output, subset, seed):
+def write_page(output, subset, seed, name='blind', sampling=None):
     data = {'schema_version': 1, 'seed': seed, 'zones': ZONES,
-            'sampling': 'Seeded random subset of JPEG review samples; predictions hidden from the reviewer.',
+            'sampling': sampling or 'Seeded random subset of JPEG review samples; predictions hidden from the reviewer.',
             'samples': subset}
     options = ''.join(f'<option value="{z}">{z}</option>' for z in ZONES)
     payload = json.dumps(data, ensure_ascii=False).replace('<', '\\u003c')
-    (output/'blind-review.html').write_text(PAGE.replace('__ZONES__', options).replace('__DATA__', payload), encoding='utf-8')
-    (output/'blind-review-samples.json').write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+    page = PAGE.replace('__ZONES__', options).replace('__NAME__', name).replace('__DATA__', payload)
+    (output/f'{name}-review.html').write_text(page, encoding='utf-8')
+    (output/f'{name}-review-samples.json').write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
+def parse_quotas(pairs):
+    quotas = {}
+    for pair in pairs or []:
+        name, n = pair.split('=', 1)
+        quotas[name] = int(n)
+    return quotas or None
 
 
 def main():
@@ -82,11 +120,22 @@ def main():
     parser.add_argument('--output-dir', type=Path, default=BASE/'output/phase-abc')
     parser.add_argument('--count', type=int, default=30)
     parser.add_argument('--seed', type=int, default=20261114)
+    parser.add_argument('--name', default='blind', help='File prefix; keep "blind" only for the original set')
+    parser.add_argument('--exclude', type=Path, help='Text file of already-labelled sample IDs to skip')
+    parser.add_argument('--quota', action='append', metavar='CATEGORY=N',
+                        help='Stratified draw, e.g. --quota BOX-1=8; repeat per category')
     args = parser.parse_args()
     review = json.loads((args.output_dir/'review-template.json').read_text(encoding='utf-8'))
-    subset = select_samples(review, args.count, args.seed)
-    write_page(args.output_dir, subset, args.seed)
-    print(args.output_dir/'blind-review.html')
+    exclude = frozenset(args.exclude.read_text(encoding='utf-8').split()) if args.exclude else frozenset()
+    quotas = parse_quotas(args.quota)
+    subset = select_samples(review, args.count, args.seed, exclude, quotas)
+    sampling = None
+    if quotas or exclude:
+        sampling = (f'Seeded draw of JPEG samples not yet labelled ({len(exclude)} excluded)'
+                    + (f', stratified by OCR sampling category {quotas}' if quotas else '')
+                    + '; predictions hidden from the reviewer.')
+    write_page(args.output_dir, subset, args.seed, args.name, sampling)
+    print(args.output_dir/f'{args.name}-review.html')
 
 
 if __name__ == '__main__':
