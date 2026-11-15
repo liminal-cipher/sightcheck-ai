@@ -6,8 +6,8 @@ import tempfile
 import unittest
 import zlib
 
-from claude_preread import (build_params, estimate, fix_run, load_prompt, parse_message, select_items,
-                            write_results)
+from claude_preread import (build_params, estimate, fix_run, image_tokens, load_prompt, parse_message,
+                            select_items, write_results)
 
 
 def tiny_png(path, width=4, height=3):
@@ -52,6 +52,10 @@ class ClaudePrereadTest(unittest.TestCase):
         self.assertEqual([i['sample_id'] for i in select_items(self.review, self.out, self.out/'ids.txt')], ['b'])
         (self.out/'s.json').write_text(json.dumps({'samples': [{'sample_id': 'a'}]}), encoding='utf-8')
         self.assertEqual([i['sample_id'] for i in select_items(self.review, self.out, self.out/'s.json')], ['a'])
+        both = select_items(self.review, self.out, [self.out/'ids.txt', self.out/'s.json'])
+        self.assertEqual([i['sample_id'] for i in both], ['b', 'a'])
+        with self.assertRaises(ValueError):
+            select_items(self.review, self.out, [self.out/'ids.txt', self.out/'ids.txt'])
         (self.out/'bad.txt').write_text('pdf\n', encoding='utf-8')
         with self.assertRaises(ValueError):
             select_items(self.review, self.out, self.out/'bad.txt')
@@ -69,8 +73,14 @@ class ClaudePrereadTest(unittest.TestCase):
         items = select_items(self.review, self.out)
         full = estimate(items, 'x' * 30, 'claude-opus-5-5', 1000, batch=False)
         half = estimate(items, 'x' * 30, 'claude-opus-5-5', 1000, batch=True)
-        self.assertEqual(full['input_tokens_upper'], round(2 * (1 + 12 / 750) + 2 * 60))
+        self.assertEqual(full['input_tokens_upper'], 2 * (3 + 1) + 2 * 60)
         self.assertAlmostEqual(half['usd_upper'], full['usd_upper'] / 2, places=2)
+
+    def test_image_tokens_follow_documented_examples(self):
+        self.assertEqual(image_tokens(1000, 1000), 1296)
+        self.assertEqual(image_tokens(1920, 1080), 2691)
+        self.assertEqual(image_tokens(3840, 2160), 4784)
+        self.assertLessEqual(image_tokens(1754, 2550), 4784)
 
     def test_parse_message_accepts_json_and_flags_truncation(self):
         good = parse_message('a', message('{"is_seat":"yes","zone":"main","row":"A","number":"3",'

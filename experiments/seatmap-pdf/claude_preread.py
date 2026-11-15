@@ -20,6 +20,7 @@ import argparse
 import base64
 import hashlib
 import json
+import math
 import re
 import struct
 import threading
@@ -56,15 +57,18 @@ def load_prompt(path=PROMPT_FILE):
     return match.group(1)
 
 
-def select_items(review, output_dir, ids_path=None):
-    """Return [{sample_id, context, crop}] for the JPEG samples, optionally limited to a list of IDs."""
+def read_ids(path):
+    if path.suffix == '.json':
+        return [s['sample_id'] for s in json.loads(path.read_text(encoding='utf-8'))['samples']]
+    return path.read_text(encoding='utf-8').split()
+
+
+def select_items(review, output_dir, ids_paths=None):
+    """Return [{sample_id, context, crop}] for the JPEG samples, optionally limited to listed IDs."""
     samples = {s['sample_id']: s for s in review['samples'] if s['unit'] == 'px'}
-    if ids_path is None:
-        ids = sorted(samples)
-    elif ids_path.suffix == '.json':
-        ids = [s['sample_id'] for s in json.loads(ids_path.read_text(encoding='utf-8'))['samples']]
-    else:
-        ids = ids_path.read_text(encoding='utf-8').split()
+    if isinstance(ids_paths, Path):
+        ids_paths = [ids_paths]
+    ids = [i for path in ids_paths for i in read_ids(path)] if ids_paths else sorted(samples)
     missing = [i for i in ids if i not in samples]
     if missing:
         raise ValueError(f'IDs not among the JPEG samples: {missing[:5]}')
@@ -101,10 +105,25 @@ def build_params(item, prompt, model, effort, max_tokens):
     }
 
 
+def image_tokens(width, height, long_edge=2576, max_tokens=4784):
+    """Visual tokens after the documented downscaling (28x28-px patches, high-resolution tier).
+
+    Every model this script uses is a Claude 4.7-or-later model, so the
+    high-resolution limits apply. The aspect-preserving shrink loop
+    approximates the published resize rule.
+    """
+    scale = min(1.0, long_edge / max(width, height))
+    while True:
+        tokens = math.ceil(width * scale / 28) * math.ceil(height * scale / 28)
+        if tokens <= max_tokens:
+            return tokens
+        scale *= 0.995
+
+
 def estimate(items, prompt, model, output_tokens, batch):
-    """Rough upper bound: images counted at full size (about w*h/750 tokens); the API downsizes large ones."""
-    image_tokens = sum(w * h / 750 for it in items for w, h in (png_size(it['context']), png_size(it['crop'])))
-    input_tokens = image_tokens + len(items) * (len(prompt) / 3 + 50)
+    """Upper-bound cost; prompt text is counted at about three characters per token."""
+    images = sum(image_tokens(*png_size(it['context'])) + image_tokens(*png_size(it['crop'])) for it in items)
+    input_tokens = images + len(items) * (len(prompt) / 3 + 50)
     price_in, price_out = PRICES[model]
     cost = (input_tokens * price_in + len(items) * output_tokens * price_out) / 1e6
     return {'items': len(items), 'input_tokens_upper': round(input_tokens),
@@ -253,8 +272,11 @@ def main():
     parser.add_argument('--name', required=True, help='Run folder under --output-dir, e.g. api-opus-high')
     parser.add_argument('--model', choices=sorted(MODELS), default='opus')
     parser.add_argument('--effort', choices=['low', 'medium', 'high', 'xhigh', 'max'], default='high')
-    parser.add_argument('--ids', type=Path, help='ID list (.txt, one per line) or a *-review-samples.json; '
-                                                 'default: every JPEG sample')
+    parser.add_argument('--ids', type=Path, action='append',
+                        help='ID list (.txt, one per line) or a *-review-samples.json; repeatable; '
+                             'default: every JPEG sample')
+    parser.add_argument('--prompt', type=Path, default=PROMPT_FILE,
+                        help='Prompt file with a ```text block (default: prompts/seat-reader-api.md)')
     parser.add_argument('--output-dir', type=Path, default=BASE/'output/phase-abc')
     parser.add_argument('--max-tokens', type=int, default=16000, help='Includes thinking tokens')
     parser.add_argument('--workers', type=int, default=4, help='Parallel requests in "run" mode')
@@ -267,7 +289,8 @@ def main():
     out = args.output_dir
     run_dir = out/args.name
     model = MODELS[args.model]
-    prompt = load_prompt()
+    prompt_file = args.prompt.resolve()
+    prompt = load_prompt(prompt_file)
     batch = args.mode in ('submit', 'collect')
 
     if args.mode == 'collect':
@@ -280,10 +303,10 @@ def main():
     items = select_items(review, out, args.ids)
     import anthropic  # imported late so "plan" also documents the SDK version it would use
     settings = {'model': model, 'effort': args.effort, 'max_tokens': args.max_tokens, 'thinking': 'adaptive',
-                'prompt_file': PROMPT_FILE.relative_to(BASE).as_posix(),
+                'prompt_file': prompt_file.relative_to(BASE).as_posix(),
                 'prompt_sha256': hashlib.sha256(prompt.encode('utf-8')).hexdigest(),
                 'sdk': f'anthropic-python {anthropic.__version__}',
-                'ids': args.ids.name if args.ids else 'all JPEG samples', 'items': len(items)}
+                'ids': [p.name for p in args.ids] if args.ids else 'all JPEG samples', 'items': len(items)}
     fix_run(run_dir, settings)
     cost = estimate(items, prompt, model, args.assume_output_tokens, batch or args.mode == 'plan')
     print(json.dumps(cost, indent=2))

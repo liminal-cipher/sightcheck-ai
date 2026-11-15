@@ -216,11 +216,17 @@ another model or effort needs another `--name`.
 & $seatmapPython experiments/seatmap-pdf/score_readers.py --blind blind-review-result.json --blind blind2-review-result.json opus-api=api-opus-high
 ```
 
+`--ids` can be repeated to join several ID lists, and `--prompt` selects
+another prompt file, such as the paraphrases used for the stability check.
+The planned runs, the decision rule and the budget are fixed in
+[`api-experiment-plan.md`](api-experiment-plan.md).
+
 `run` sends the same requests directly instead of as a batch, skipping items
 that already have an answer. `submit` and `run` refuse to send when the upper
-estimate is above `--max-cost` (USD 10 by default). The estimate counts images
-at full size, so real costs are usually lower; `collect` and `run` print the
-measured token usage.
+estimate is above `--max-cost` (USD 10 by default). The estimate counts image
+tokens with the documented 28×28-pixel patch rule and high-resolution limits,
+and assumes a generous output length (`--assume-output-tokens`), so real costs
+are usually lower; `collect` and `run` print the measured token usage.
 
 `compare_readings.py` scores only blind-labeled items. Other items are routed
 to the queue when the OCR and model readings differ, plus seeded spot checks of
