@@ -113,7 +113,7 @@ h2 { font-size:16px; margin:0; letter-spacing:-.5px; font-weight:700; }
 #comparison-summary div>span:last-child { font-size:11px; color:#949c8d; margin-left:auto; }
 .compare-a { color:#637744; }.compare-b { color:#8c72a5; }
 #comparison-summary p { grid-column:span 2; background:#fafbf8; margin:0; padding:9px 13px; font-size:10px; color:#8b9580; line-height:1.7; }
-.selected-label { font-size:10px; letter-spacing:1.8px; color:#8e9981; margin-bottom:9px; }
+.selected-label { font-size:12px; color:#8e9981; margin-bottom:9px; }
 #seat-detail { padding:0 21px; }
 .seat-number { font-size:45px; line-height:1.1; font-weight:600; letter-spacing:-1.6px; display:flex; align-items:baseline; gap:13px; margin-bottom:18px; }
 .seat-number span { font-size:12px; font-weight:400; color:#8c9583; letter-spacing:-.3px; }
@@ -232,6 +232,8 @@ textarea { resize:vertical; min-height:80px; line-height:1.7; }
   .topbar { min-height:65px; padding:0 18px; gap:8px; }.brand { font-size:22px; }.brand svg { width:26px; height:26px; }.header-actions { gap:12px; }.demo-badge { display:none; }.header-actions .text-button { font-size:12px; }
   main { padding:21px 16px; }.breadcrumb { margin-bottom:20px; font-size:11px; gap:9px; } h1 { font-size:23px; line-height:1.4; }
   .event-heading { margin-bottom:20px; }.event-heading p { font-size:11px; }.eyebrow { font-size:9px; letter-spacing:1.5px; }.dot { margin:0 6px; }
+  /* Panels reorder on phones (view first), so the 01-03 step numbers would read out of order. */
+  .step { display:none; }
   .workspace { grid-template-columns:minmax(0,1fr); gap:15px; }.view-panel { grid-row:1; }.seat-panel { grid-row:2; }.detail-panel { grid-row:3; grid-column:auto; display:block; }
   .viewer-top { padding:17px; min-height:62px; }.panel-top h2 { font-size:14px; }.view-tabs { gap:10px; }.view-tabs button { font-size:11px; }
   .scene-frame { height:340px; }.scene-labels { inset:15px 11px auto; }.scene-labels span { font-size:10px; padding:5px 7px; }

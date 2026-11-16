@@ -37,7 +37,9 @@ const icon = name => {
 const field = (id, label, value = '', options = {}) => `<label class="field ${options.wide ? 'wide' : ''}" for="${escape(id)}"><span>${escape(label)}</span><input id="${escape(id)}" name="${escape(id)}" type="${options.type || 'text'}" value="${escape(value)}" ${options.required ? 'required' : ''} ${options.max ? `maxlength="${options.max}"` : ''} ${options.type === 'number' ? 'step="any"' : ''} ${options.min != null ? `min="${options.min}"` : ''} ${options.maxValue != null ? `max="${options.maxValue}"` : ''} ${options.placeholder ? `placeholder="${escape(options.placeholder)}"` : ''} ${options.readonly ? 'readonly' : ''}>${options.help ? `<small>${escape(options.help)}</small>` : ''}</label>`;
 const selectField = (id, label, options, selected, wide = false) => `<label class="field ${wide ? 'wide' : ''}" for="${id}"><span>${escape(label)}</span><select id="${id}" name="${id}">${options.map(([value, text]) => `<option value="${escape(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${escape(text)}</option>`).join('')}</select></label>`;
 const textarea = (id, label, value = '', help = '', options = {}) => `<label class="field" for="${id}"><span>${escape(label)}</span><textarea id="${id}" name="${id}" rows="3" ${options.required ? 'required' : ''} ${options.max ? `maxlength="${options.max}"` : ''}>${escape(value)}</textarea>${help ? `<small>${escape(help)}</small>` : ''}</label>`;
-const vector = (prefix, label, values, axes = ['X', 'Y', 'Z'], min) => `<fieldset class="vector ${axes.length === 2 ? 'two' : ''}"><legend>${escape(label)}</legend><div class="vector-grid">${axes.map((axis, i) => field(`${prefix}-${i}`, axis, values?.[i] ?? 0, { type: 'number', required: true, min })).join('')}</div></fieldset>`;
+// Computed positions can carry float noise (8.057500000000001); show at most 6 decimals.
+const tidyNumber = value => typeof value === 'number' && Number.isFinite(value) ? Number(value.toFixed(6)) : value;
+const vector = (prefix, label, values, axes = ['X', 'Y', 'Z'], min) => `<fieldset class="vector ${axes.length === 2 ? 'two' : ''}"><legend>${escape(label)}</legend><div class="vector-grid">${axes.map((axis, i) => field(`${prefix}-${i}`, axis, tidyNumber(values?.[i] ?? 0), { type: 'number', required: true, min })).join('')}</div></fieldset>`;
 const button = (label, action, className = '', glyph) => `<button type="button" class="button ${className}" data-action="${action}">${glyph ? icon(glyph) : ''}${escape(label)}</button>`;
 const submit = (label, primary = true) => `<button type="submit" class="button ${primary ? 'primary' : ''}">${escape(label)} ${icon('arrow')}</button>`;
 const pill = (label, tone = '') => `<span class="pill ${tone}">${escape(label)}</span>`;
@@ -126,17 +128,17 @@ function renderMessage() {
 function mount() {
   $('#operator-app').innerHTML = `<a class="skip-link" href="#editor">운영 내용으로 바로가기</a><div class="studio">
     <aside class="sidebar" aria-label="프로젝트와 접속 정보">
-      <div><a class="brand" href="/operator.html">${icon('eye')}<span>시야체크<span class="brand-dot">.</span></span></a><span class="studio-label">OPERATOR STUDIO</span></div>
+      <div><a class="brand" href="/operator.html">${icon('eye')}<span>시야체크<span class="brand-dot">.</span></span></a><span class="studio-label">운영 스튜디오</span></div>
       <div class="project-picker"><label for="project-select">관리할 프로젝트</label><select class="control" id="project-select" disabled><option value="">프로젝트 불러오는 중</option></select>${button('새 프로젝트', 'new-project', 'subtle', 'plus')}</div>
-      <div class="sidebar-divider"></div><div class="sidebar-meta"><div class="sidebar-caption">FROM SPACE TO SEAT</div><strong>공간을 담고, 현장에서 확인하세요.</strong>공연마다 달라지는 설치물과 관람대상을 관리하고, 대조한 좌석만 관객에게 공개합니다.</div>
+      <div class="sidebar-divider"></div><div class="sidebar-meta"><strong>공간을 담고, 현장에서 확인하세요.</strong>공연마다 달라지는 설치물과 관람대상을 관리하고, 대조한 좌석만 관객에게 공개합니다.</div>
       <div class="sidebar-footer"><div id="auth-state" class="help">접속 확인 중</div><div id="auth-action"></div><a href="/index.html" target="_blank" rel="noopener">도면 변환 도구 열기 ${icon('arrow')}</a></div>
     </aside>
     <main class="main" id="main"><div class="topline"><div class="breadcrumb"><span>운영 스튜디오</span><span>/</span><span id="project-name">프로젝트</span></div><div class="top-actions"><span id="revision-pill" class="pill neutral">연결 확인 중</span><span id="busy-label" class="busy-label" role="status" hidden>저장 중…</span>${button('새로 불러오기', 'refresh', 'subtle small', 'reset')}</div></div>
-      <section class="hero"><div><div class="eyebrow">A BETTER VIEW, BEFORE THE TICKET</div><h1 id="page-title">관객의 시야를 준비하는 공간.</h1><p id="page-subtitle">공간부터 게시까지, 한 공연의 시야를 차근차근 완성하세요.</p></div><div class="hero-stamp">ONE SPACE.<br>MANY PERSPECTIVES.</div></section>
+      <section class="hero"><div><h1 id="page-title">관객의 시야를 준비하는 공간.</h1><p id="page-subtitle">공간부터 게시까지, 한 공연의 시야를 차근차근 완성하세요.</p></div></section>
       <div id="message" hidden aria-live="polite"></div><div id="event-toolbar" class="event-toolbar"></div>
       <nav class="workflow" id="workflow" aria-label="운영 단계">${STEPS.map(([id, name, hint], i) => `<button type="button" data-step="${id}" aria-current="${id === state.step ? 'step' : 'false'}"><span class="step-no">0${i + 1}</span><span class="step-copy"><strong>${name}</strong><small>${hint}</small></span></button>`).join('')}</nav>
       <div id="draft-notice" hidden></div><div class="workspace" id="workspace"><div class="editor" id="editor" tabindex="-1"></div><aside class="preview-pane" id="preview-pane" aria-label="선택 공연 미리보기">
-        <section class="card"><div class="preview-header"><div><div class="eyebrow">LIVE PREVIEW</div><h2>관객의 자리에서</h2></div><div class="view-tabs" role="group" aria-label="미리보기 시점"><button type="button" data-view="seat" aria-pressed="true">좌석 시점</button><button type="button" data-view="overview" aria-pressed="false">공간 전체</button></div></div>
+        <section class="card"><div class="preview-header"><div><h2>관객의 자리에서</h2></div><div class="view-tabs" role="group" aria-label="미리보기 시점"><button type="button" data-view="seat" aria-pressed="true">좌석 시점</button><button type="button" data-view="overview" aria-pressed="false">공간 전체</button></div></div>
           <div class="scene-frame"><div id="scene" class="scene"><div class="scene-empty">${icon('cube')}<span>공연을 선택하면 공간을 미리 볼 수 있습니다.</span></div></div><div class="scene-tag" id="scene-tag" hidden></div><div class="scene-disclaimer">3D 추정 · 현장 대조 필요</div></div>
           <div class="preview-controls" id="preview-controls"></div><div class="sightline-summary" id="sightline-summary"></div><div class="preview-map" id="preview-map"></div><div class="preview-foot"><span id="scene-status" role="status">미리보기 대기</span><span>검수 기준 눈높이 1.20m</span></div>
         </section><div class="preview-note">${icon('info')}<span>설치물은 입력 치수대로 계산합니다. 앞사람과 공연 중 움직임은 포함되지 않습니다. 사진과 현재 공연 배치를 함께 대조하세요.</span></div>
@@ -205,7 +207,7 @@ function renderEditor({ capture = true } = {}) {
 }
 function loginView() {
   if (state.auth.mode === 'local') return card('로컬 운영 접속이 필요합니다', '운영 서버는 이 컴퓨터의 localhost에서 열어 주세요.', `<div class="note warn">원격 주소에서는 로컬 운영 기능에 접속할 수 없습니다. 서버가 안내한 localhost 주소로 열어 주세요.</div><div class="actions">${button('접속 다시 확인', 'refresh', 'primary', 'reset')}</div>`);
-  return `<section class="card login-card"><div class="card-body"><div class="login-mark">${icon('lock')}</div><div class="eyebrow" style="margin-top:20px">OPERATOR ACCESS</div><h2>운영자 로그인이 필요합니다.</h2><p class="help">서버 운영자가 발급한 토큰으로 접속하세요. 공연 배치와 현장 사진은 로그인한 운영자만 관리할 수 있습니다.</p>${form('login-form', `${field('auth-token', '운영자 접속 토큰', state.loginToken, { type: 'password', required: true, placeholder: '접속 토큰 입력' })}${submit('로그인')}`)}</div></section>`;
+  return `<section class="card login-card"><div class="card-body"><div class="login-mark">${icon('lock')}</div><h2 style="margin-top:20px">운영자 로그인이 필요합니다.</h2><p class="help">서버 운영자가 발급한 토큰으로 접속하세요. 공연 배치와 현장 사진은 로그인한 운영자만 관리할 수 있습니다.</p>${form('login-form', `${field('auth-token', '운영자 접속 토큰', state.loginToken, { type: 'password', required: true, placeholder: '접속 토큰 입력' })}${submit('로그인')}`)}</div></section>`;
 }
 
 function spaceView() {
