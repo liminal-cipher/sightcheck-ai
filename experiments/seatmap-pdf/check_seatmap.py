@@ -10,11 +10,12 @@ Cell positions always come from the CV shape detection in
 <theatre>/seats.json; only gray seat cells are checked, not blue wheelchair
 regions. Readings come from one or more sources in priority order: a folder of
 model readings (result-*.json, e.g. an API run), "ocr" (the OCR text in
-seats.json) or "labels". The first source that has a reading for a cell wins.
+seats.json), "labels", or a map-review export (*.json, from
+make_map_review.py). The first source that has a reading for a cell wins.
 
 For an unseen plan the primary source is a full model reading. "labels" here
-means the experiment's human labels; in a review workflow its place is taken by
-the reviewer's corrections, re-checked against the rest of the map.
+means the experiment's human labels; in a review workflow the reviewer's
+corrections take that place: pass the map-review export first and re-run.
 
 --compare SOURCE reads a second, independent reader (normally "ocr") and flags
 cells where both readers answered and disagree.
@@ -71,6 +72,13 @@ def label_readings(out):
     return labels
 
 
+def correction_readings(path):
+    """Reviewed cells from a map-review export (same sample/label layout as the blind pages)."""
+    samples = json.loads(path.read_text(encoding='utf-8'))['samples']
+    return {s['sample_id']: s['label'] for s in samples
+            if s.get('label', {}).get('status') == 'reviewed' and s['label'].get('is_seat')}
+
+
 def collect(out, theatre, sources, seats):
     """Merge sources for one theatre into {candidate_id: reading}, recording which source won."""
     merged, origin = {}, {}
@@ -78,7 +86,12 @@ def collect(out, theatre, sources, seats):
         if source == 'ocr':
             found = ocr_readings(seats)
         else:
-            raw = label_readings(out) if source == 'labels' else load_model(out/source)
+            if source == 'labels':
+                raw = label_readings(out)
+            elif source.endswith('.json'):
+                raw = correction_readings(out/source)
+            else:
+                raw = load_model(out/source)
             prefix = f'{theatre}--'
             found = {k[len(prefix):]: norm(v) for k, v in raw.items() if k.startswith(prefix)}
         for cid, reading in found.items():

@@ -268,6 +268,30 @@ OP seats, theatre 3 lists 244 regular seats; wheelchair seats are blue regions
 and are not counted here. The report goes to
 `output/phase-abc/structure-check.json` (`--name` changes the file stem).
 
+### Whole-map review page
+
+`make_map_review.py` draws every detected cell on each plan, colored by the
+same checks: red for flagged cells, gray dashed for unread cells, green for
+clean cells, dark blue dashed for wheelchair regions and purple for reviewed
+cells. A cell shows a zoomed view, its reading, its OCR reading and the flag
+reasons; the reviewer can confirm the reading or enter a correction. `n` and
+`p` step through the current filter, top to bottom and left to right, and
+wrap around at the ends. They are ignored while typing in a form field.
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_map_review.py --source subagent-preread --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244
+```
+
+Open `output/phase-abc/map-review.html`. The page keeps reviews in browser
+storage and saves them with “결과 저장” as `map-review-result.json`. Place the
+file in `output/phase-abc/` and pass it first to re-check the corrected map:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source map-review-result.json --source subagent-preread --source ocr --compare ocr
+```
+
+The page does not re-run the checks itself.
+
 ## Manual review
 
 To refresh only the review screen and PDF/JPEG context images from existing results
