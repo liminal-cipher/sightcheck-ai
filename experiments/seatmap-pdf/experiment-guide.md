@@ -271,19 +271,22 @@ and are not counted here. The report goes to
 ### Whole-map review page
 
 `make_map_review.py` draws every detected cell on each plan, colored by the
-same checks: red for flagged cells, gray dashed for unread cells, green for
-clean cells, dark blue dashed for wheelchair regions and purple for reviewed
-cells. A cell shows a zoomed view, its reading, its OCR reading and the flag
-reasons; the reviewer can confirm the reading or enter a correction. `n` and
-`p` step through the current filter, top to bottom and left to right, and
-wrap around at the ends. They are ignored while typing in a form field.
+same checks: red for flagged cells, amber dashed for unread cells, green for
+reviewed cells and dark blue dashed for wheelchair regions. Clean cells are
+left unmarked. The default list, “확인할 칸”, holds the flagged and unread cells
+not yet reviewed, and the page opens the first flagged cell (or the first cell
+in the list). A cell shows a zoomed view, its reading, its OCR reading and the
+flag reasons. The form starts with the current reading, so “저장하고 다음 칸”
+(or Enter) confirms it as is or saves a correction. `n` and `p` step through
+the current list, top to bottom and left to right, and wrap around at the
+ends. They are ignored while typing in a form field.
 
 ```powershell
 & $seatmapPython experiments/seatmap-pdf/make_map_review.py --source subagent-preread --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244
 ```
 
 Open `output/phase-abc/map-review.html`. The page keeps reviews in browser
-storage and saves them with “결과 저장” as `map-review-result.json`. Place the
+storage and saves them with “결과 파일로 저장” as `map-review-result.json`. Place the
 file in `output/phase-abc/` and pass it first to re-check the corrected map:
 
 ```powershell
