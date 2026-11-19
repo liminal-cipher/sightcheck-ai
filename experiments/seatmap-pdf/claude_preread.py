@@ -171,7 +171,8 @@ def write_results(run_dir, batch):
     cost = (tokens_in * price_in + tokens_out * price_out) / 1e6 * (0.5 if batch else 1)
     failed = sorted(k for k, e in latest.items() if not e['ok'])
     print(f'{len(readings)} readings written, {len(failed)} failed; '
-          f'{tokens_in} input + {tokens_out} output tokens, about ${cost:.2f} at list price')
+          f'{tokens_in} input + {tokens_out} output tokens, about ${cost:.2f} at '
+          f'{"batch" if batch else "standard"} price')
     if failed:
         print('Failed:', ', '.join(failed[:10]))
 
