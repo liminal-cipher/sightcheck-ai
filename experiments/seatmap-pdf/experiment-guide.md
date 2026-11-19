@@ -1,10 +1,16 @@
-# ACC seat-map experiment: phases A–C
+# ACC seat-map experiment: commands and tools
 
-The improved PDF baseline connects all 3,760 text candidates across seven plans.
-The image baseline finds 506 gray square candidates in Theatre 2 and 244 in
-Theatre 3. These are candidate and integrity counts, **not recognition accuracy**.
-All 550 manual-review samples remain pending. No population accuracy or recall
-has been measured.
+This guide holds the commands and tool behavior. Results, reasons and limits
+are in [the experiment report](experiment-report.md) (Korean).
+
+- PDF (theatre 1): seven plans, 3,760 seat texts connected to blocks; the user
+  checked every block in color overlays.
+- JPEG (theatres 2 and 3): CV finds 506 and 244 gray seat cells (matching the
+  legends). Claude Sonnet 5.5 read all 750 cells; the structure check found no
+  contradictions. Accuracy evidence comes from 70 prediction-blind labels and is
+  limited to that purposive sample.
+- Not measured: CV detection recall, position error, and any venue other than
+  ACC theatres 1-3.
 
 ## Run locally
 
@@ -56,6 +62,15 @@ Individual runs:
 ```powershell
 & $seatmapPython experiments/seatmap-pdf/extract_layout.py experiments/seatmap-pdf/input/theatre-1/arena-944.pdf --output-dir experiments/seatmap-pdf/output/single-pdf
 & $seatmapPython experiments/seatmap-pdf/image_baseline.py experiments/seatmap-pdf/input/theatre-3/theatre-3-248.jpg --output-dir experiments/seatmap-pdf/output/single-image
+```
+
+The original 2026-10-20 PDF baseline (`extract_seats.py`, kept unchanged)
+writes a JSON and a review PNG per PDF and exits with code 2 when seats are
+unmatched, duplicated or do not match the printed total:
+
+```powershell
+python -m pip install -r experiments/seatmap-pdf/requirements.txt
+python experiments/seatmap-pdf/extract_seats.py "C:\path\to\프로시니엄형 - 608석(기본).pdf" --output-dir experiments/seatmap-pdf/output
 ```
 
 ## Results and interpretation
@@ -182,7 +197,13 @@ then score each reader folder:
 
 `score_readers.py` reports blind labels as the primary score and queue
 verdicts separately, because queue verdicts were given with a model reading
-visible.
+visible. It rewrites `reader-scores.json` with only the readers passed, so pass
+every reader you want to keep in that file.
+
+`compare_readings.py` scores only blind-labeled items. Other items are routed
+to the queue when the OCR and model readings differ, plus seeded spot checks of
+agreements. The queue page shows both readings, so its verdicts confirm data
+but are not accuracy measurements.
 
 A second blind set skips the items already labeled and fixes how many items
 come from each OCR sampling category, so rare cells such as BOX seats are
@@ -226,12 +247,31 @@ that already have an answer. `submit` and `run` refuse to send when the upper
 estimate is above `--max-cost` (USD 10 by default). The estimate counts image
 tokens with the documented 28×28-pixel patch rule and high-resolution limits,
 and assumes a generous output length (`--assume-output-tokens`), so real costs
-are usually lower; `collect` and `run` print the measured token usage.
+are usually lower; `collect` and `run` print the measured token usage. In the
+2026-11 runs the input estimate came out about 9% low, while output averaged
+about 40-120 tokens per item, far below the default assumption of 4,000.
 
-`compare_readings.py` scores only blind-labeled items. Other items are routed
-to the queue when the OCR and model readings differ, plus seeded spot checks of
-agreements. The queue page shows both readings, so its verdicts confirm data
-but are not accuracy measurements.
+### Full-map reading
+
+`make_cell_items.py` prepares the same two images for every gray seat cell of
+theatres 2 and 3 (750 cells), not only for the review samples. It draws them
+with the review-sample code, reuses the saved images of cells that are already
+samples, and writes `cell-items.json`. `--verify` redraws the reused cells and
+fails unless every pixel matches. New images go to `output/phase-abc/
+cell-contexts/` (about 1 MB each) and `cell-crops/`; delete `cell-contexts/`
+after the run and rebuild it when needed.
+
+`claude_preread.py --cells` reads that list instead of `--ids`. `submit`
+splits a large list into several batches under the request-size limit and
+`collect` waits until all of them have ended. The run folder plugs straight
+into `score_readers.py` and `check_seatmap.py`:
+
+```powershell
+& $seatmapPython experiments/seatmap-pdf/make_cell_items.py --verify
+& $seatmapPython experiments/seatmap-pdf/claude_preread.py submit --name api-sonnet-high-cells --model sonnet --effort high --cells experiments/seatmap-pdf/output/phase-abc/cell-items.json --assume-output-tokens 300 --max-cost 8
+& $seatmapPython experiments/seatmap-pdf/claude_preread.py collect --name api-sonnet-high-cells
+& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source api-sonnet-high-cells --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244
+```
 
 ### Structure check
 
@@ -260,8 +300,11 @@ numbers, neighboring row letters), one at a time, and reports how many raise a
 structural flag on the planted cell:
 
 ```powershell
-& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source subagent-preread --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244 --inject 300
+& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source api-sonnet-high-cells --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244 --inject 300
 ```
+
+Before the full reading, the same measurement used the partial
+`subagent-preread` reading filled in with `ocr`.
 
 The legend counts are gray seat cells only: theatre 2 lists 466 regular and 40
 OP seats, theatre 3 lists 244 regular seats; wheelchair seats are blue regions
@@ -282,7 +325,7 @@ the current list, top to bottom and left to right, and wrap around at the
 ends. They are ignored while typing in a form field.
 
 ```powershell
-& $seatmapPython experiments/seatmap-pdf/make_map_review.py --source subagent-preread --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244
+& $seatmapPython experiments/seatmap-pdf/make_map_review.py --source api-sonnet-high-cells --source ocr --compare ocr --expect theatre-2:total=506 --expect theatre-2:OP=40 --expect theatre-3:total=244
 ```
 
 Open `output/phase-abc/map-review.html`. The page keeps reviews in browser
@@ -290,7 +333,7 @@ storage and saves them with “결과 파일로 저장” as `map-review-result.
 file in `output/phase-abc/` and pass it first to re-check the corrected map:
 
 ```powershell
-& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source map-review-result.json --source subagent-preread --source ocr --compare ocr
+& $seatmapPython experiments/seatmap-pdf/check_seatmap.py --source map-review-result.json --source api-sonnet-high-cells --source ocr --compare ocr
 ```
 
 The page does not re-run the checks itself.
@@ -337,10 +380,13 @@ working images live in the respective output subfolders. Overlay colors:
 green assigned candidate; red unresolved; magenta duplicate identity; blue
 accessibility region; orange possible missing shape. Green is not ground truth.
 
-The 550 deterministic samples include each PDF block's extrema, corners and
-center; image row-band extrema, unresolved OCR strata, BOX columns and every
-blue region. These are purposefully selected, not an unbiased random sample.
-Review the full image too: candidate-only crops cannot reveal all missed seats.
+The 550 deterministic samples (341 PDF, 209 JPEG) include each PDF block's
+extrema, corners and center; image row-band extrema, unresolved OCR strata, BOX
+columns and every blue region. These are purposefully selected, not an unbiased
+random sample. Review the full image too: candidate-only crops cannot reveal all
+missed seats. This shape/position review was never completed: the PDF samples
+were replaced by the full block overlays, and 106 JPEG samples were labeled
+through the blind and queue pages instead.
 
 For each sample, mark shape correctness (JPEG square candidates only), text
 correctness and block/row/number correctness separately. Click the intended
@@ -375,7 +421,8 @@ inventory of a defined region; this tool does not estimate it from printed total
 
 The original recorded run passed 24 synthetic/contract/evaluation tests.
 On 2026-10-26, all 33 local tests passed, including the nine additional
-review-context tests. Actual seven-plan comparison checks
+review-context tests. On 2026-11-20, all 69 Python tests passed. Actual
+seven-plan comparison checks
 that all previous IDs and text centers survive. Image overlays were inspected
 for unresolved glyphs, BOX/floor separation and blue-region handling; this is
 qualitative diagnosis, not completed ground-truth annotation.
