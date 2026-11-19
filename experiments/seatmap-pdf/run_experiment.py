@@ -22,6 +22,14 @@ from evaluate_review import evaluate
 BASE = Path(__file__).resolve().parent
 # Source units, independent of the surrounding crop margin.
 SEAT_HIGHLIGHT_PADDING = {'pt': 1.5, 'px': 3}
+# Margin around a candidate in a seat crop, in source units.
+SEAT_CROP_PADDING = {'pt': 48, 'px': 100}
+
+
+def seat_crop_bounds(box, scale, image_size, unit):
+    padding = SEAT_CROP_PADDING[unit]
+    return [max(0,int((box[0]-padding)*scale)),max(0,int((box[1]-padding)*scale)),
+            min(image_size[0],int((box[2]+padding)*scale)),min(image_size[1],int((box[3]+padding)*scale))]
 
 
 def write_seat_crop(image, box, scale, bounds, unit, destination):
@@ -85,9 +93,7 @@ def sample_document(name, candidates, image, scale, output, samples, unit, sourc
     for candidate in chosen.values():
         sample_id = f"{name}--{candidate['candidate_id']}"
         box = candidate['bbox']
-        padding = 48 if unit=='pt' else 100
-        bounds = [max(0,int((box[0]-padding)*scale)),max(0,int((box[1]-padding)*scale)),
-                  min(image.width,int((box[2]+padding)*scale)),min(image.height,int((box[3]+padding)*scale))]
+        bounds = seat_crop_bounds(box, scale, image.size, unit)
         relative = f'review-crops/{sample_id}.png'
         write_seat_crop(image, box, scale, bounds, unit, output/relative)
         samples.append({'sample_id':sample_id,'document':name,'source_sha256':source_hash,
@@ -194,6 +200,14 @@ def write_pdf_contexts(output, review):
     return contexts
 
 
+def jpeg_context(source, bbox):
+    """Whole JPEG plan with exterior corners around one cell."""
+    image = source.convert('RGB')
+    # JPEG floor backgrounds are tinted; keep dark glyphs and seat fills intact.
+    draw_cell_corners(image, bbox, gap=6, width=3, arm_length=18, background_min=180)
+    return image
+
+
 def write_jpeg_contexts(output, review):
     """Keep full-plan labels and floor/BOX divisions visible without inferring zones."""
     contexts = {}
@@ -205,10 +219,7 @@ def write_jpeg_contexts(output, review):
     for document, samples in grouped.items():
         with Image.open(output/document/'rgb.png') as source:
             for sample in samples:
-                image = source.convert('RGB')
-                # JPEG floor backgrounds are tinted; keep dark glyphs and seat fills intact.
-                draw_cell_corners(image, sample['prediction']['bbox'], gap=6, width=3,
-                                  arm_length=18, background_min=180)
+                image = jpeg_context(source, sample['prediction']['bbox'])
                 relative = f"review-contexts/{sample['sample_id']}.png"
                 image.save(output/relative, compress_level=1)
                 contexts[sample['sample_id']] = {'image':relative}

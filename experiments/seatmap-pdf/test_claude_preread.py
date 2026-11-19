@@ -6,8 +6,8 @@ import tempfile
 import unittest
 import zlib
 
-from claude_preread import (build_params, estimate, fix_run, image_tokens, load_prompt, parse_message,
-                            select_items, write_results)
+from claude_preread import (batch_ids, build_params, cell_items, collect_batch, estimate, fix_run, image_tokens,
+                            load_prompt, parse_message, request_chunks, select_items, write_results)
 
 
 def tiny_png(path, width=4, height=3):
@@ -103,6 +103,44 @@ class ClaudePrereadTest(unittest.TestCase):
         write_results(run_dir, batch=False)
         result = json.loads((run_dir/'result-01.json').read_text(encoding='utf-8'))
         self.assertEqual([r['sample_id'] for r in result], ['a'])
+
+    def test_cell_items_read_explicit_paths_and_require_images(self):
+        listing = {'samples': [{'sample_id': 't--a', 'context': 'review-contexts/a.png', 'crop': 'review-crops/a.png'}]}
+        (self.out/'cells.json').write_text(json.dumps(listing), encoding='utf-8')
+        items = cell_items(self.out, self.out/'cells.json')
+        self.assertEqual(items[0]['crop'], self.out/'review-crops/a.png')
+        listing['samples'].append({'sample_id': 't--b', 'context': 'missing.png', 'crop': 'review-crops/b.png'})
+        (self.out/'cells.json').write_text(json.dumps(listing), encoding='utf-8')
+        with self.assertRaises(ValueError):
+            cell_items(self.out, self.out/'cells.json')
+
+    def test_requests_split_under_the_size_limit_in_order(self):
+        items = [{'sample_id': str(i)} for i in range(5)]
+        one = len(json.dumps({'custom_id': '0', 'params': {'x': 'y' * 50}}))
+        chunks = list(request_chunks(items, lambda it: {'x': 'y' * 50}, limit=one * 2))
+        self.assertEqual([[r['custom_id'] for r in c] for c in chunks], [['0', '1'], ['2', '3'], ['4']])
+        with self.assertRaises(SystemExit):
+            list(request_chunks(items, lambda it: {'x': 'y' * 50}, limit=one - 1))
+
+    def test_collect_waits_for_every_batch_and_keeps_old_runs(self):
+        self.assertEqual(batch_ids({'batch_id': 'old'}), ['old'])
+        self.assertEqual(batch_ids({'batch_ids': ['b1', 'b2']}), ['b1', 'b2'])
+        run_dir = self.out/'run'
+        fix_run(run_dir, {'model': 'claude-haiku-5-5', 'batch_ids': ['b1', 'b2']})
+        text = '{"is_seat":"yes","zone":"main","row":"A","number":"1","confidence":"high","note":""}'
+        status = {'b1': 'ended', 'b2': 'in_progress'}
+        counts = SimpleNamespace(processing=1, succeeded=0, errored=0)
+        results = {'b1': [SimpleNamespace(custom_id='x', result=SimpleNamespace(type='succeeded', message=message(text)))],
+                   'b2': [SimpleNamespace(custom_id='y', result=SimpleNamespace(type='expired'))]}
+        batches = SimpleNamespace(retrieve=lambda i: SimpleNamespace(id=i, processing_status=status[i], request_counts=counts),
+                                  results=lambda i: results[i])
+        client = SimpleNamespace(messages=SimpleNamespace(batches=batches))
+        self.assertFalse(collect_batch(client, run_dir))
+        self.assertFalse((run_dir/'responses.jsonl').exists())
+        status['b2'] = 'ended'
+        self.assertTrue(collect_batch(client, run_dir))
+        lines = [json.loads(l) for l in (run_dir/'responses.jsonl').read_text(encoding='utf-8').splitlines()]
+        self.assertEqual([(l['sample_id'], l['ok']) for l in lines], [('x', True), ('y', False)])
 
 
 if __name__ == '__main__':

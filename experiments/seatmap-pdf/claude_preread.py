@@ -3,8 +3,9 @@
 Modes:
   plan     build every request without an API key; print the item count and a cost estimate
   run      send the requests one at a time (resumable; finished items are skipped)
-  submit   send the requests as one Message Batch (half price, usually done within an hour)
-  collect  fetch a finished batch
+  submit   send the requests as Message Batches (half price, usually done within an hour);
+           a large item list is split into several batches under the request-size limit
+  collect  fetch the finished batches
 
 Each run lives in <output-dir>/<name>/: run.json (model, effort, prompt hash and
 SDK version, fixed when the run is planned), responses.jsonl (one line per API
@@ -76,6 +77,20 @@ def select_items(review, output_dir, ids_paths=None):
         raise ValueError('Duplicate sample IDs in the ID list')
     return [{'sample_id': i, 'context': output_dir/'review-contexts'/f'{i}.png',
              'crop': output_dir/samples[i]['crop']} for i in ids]
+
+
+def cell_items(output_dir, path):
+    """Return [{sample_id, context, crop}] from an item list written by make_cell_items.py."""
+    samples = json.loads(path.read_text(encoding='utf-8'))['samples']
+    ids = [s['sample_id'] for s in samples]
+    if len(set(ids)) != len(ids):
+        raise ValueError('Duplicate sample IDs in the item list')
+    items = [{'sample_id': s['sample_id'], 'context': output_dir/s['context'], 'crop': output_dir/s['crop']}
+             for s in samples]
+    missing = [str(p) for it in items for p in (it['context'], it['crop']) if not p.exists()]
+    if missing:
+        raise ValueError(f'Missing images: {missing[:5]}')
+    return items
 
 
 def png_size(path):
@@ -233,36 +248,59 @@ def run_sync(client, run_dir, items, prompt, args, model):
             future.result()
 
 
-def submit_batch(client, run_dir, items, prompt, args, model):
-    requests, size = [], 0
+def request_chunks(items, make_params, limit=BATCH_LIMIT_BYTES):
+    """Yield lists of batch requests whose JSON size stays under limit (one batch each)."""
+    chunk, size = [], 0
     for it in items:
-        params = build_params(it, prompt, model, args.effort, args.max_tokens)
-        size += len(json.dumps(params))
-        requests.append({'custom_id': it['sample_id'], 'params': params})
-    if size > BATCH_LIMIT_BYTES:
-        raise SystemExit(f'Batch would be {size / 2**20:.0f} MB; split the ID list into smaller runs')
-    batch = client.messages.batches.create(requests=requests)
-    update_run(run_dir, batch_id=batch.id, submitted_utc=datetime.now(timezone.utc).isoformat(timespec='seconds'))
-    print(f'Submitted batch {batch.id} with {len(requests)} requests; run "collect" later')
+        request = {'custom_id': it['sample_id'], 'params': make_params(it)}
+        request_size = len(json.dumps(request))
+        if request_size > limit:
+            raise SystemExit(f'{it["sample_id"]} alone is {request_size / 2**20:.0f} MB, over the batch limit')
+        if chunk and size + request_size > limit:
+            yield chunk
+            chunk, size = [], 0
+        chunk.append(request)
+        size += request_size
+    if chunk:
+        yield chunk
+
+
+def batch_ids(saved):
+    """Batch IDs of a run; runs from before batch splitting stored a single batch_id."""
+    return saved.get('batch_ids') or ([saved['batch_id']] if saved.get('batch_id') else [])
+
+
+def submit_batch(client, run_dir, items, prompt, args, model):
+    """Send the requests as one or more batches; each ID is saved as soon as its batch exists."""
+    ids = []
+    for chunk in request_chunks(items, lambda it: build_params(it, prompt, model, args.effort, args.max_tokens)):
+        batch = client.messages.batches.create(requests=chunk)
+        ids.append(batch.id)
+        update_run(run_dir, batch_ids=ids, submitted_utc=datetime.now(timezone.utc).isoformat(timespec='seconds'))
+        print(f'Submitted batch {batch.id} with {len(chunk)} requests')
+    print(f'{len(ids)} batch(es) for {len(items)} items; run "collect" later')
 
 
 def collect_batch(client, run_dir):
     saved = json.loads((run_dir/'run.json').read_text(encoding='utf-8'))
-    batch = client.messages.batches.retrieve(saved['batch_id'])
-    counts = batch.request_counts
-    if batch.processing_status != 'ended':
+    batches = [client.messages.batches.retrieve(i) for i in batch_ids(saved)]
+    pending = [b for b in batches if b.processing_status != 'ended']
+    for batch in pending:
+        counts = batch.request_counts
         print(f'Batch {batch.id} is {batch.processing_status}: {counts.processing} processing, '
               f'{counts.succeeded} succeeded, {counts.errored} errored')
+    if pending:
         return False
     with open(run_dir/'responses.jsonl', 'w', encoding='utf-8') as f:
-        for result in client.messages.batches.results(batch.id):
-            if result.result.type == 'succeeded':
-                entry = parse_message(result.custom_id, result.result.message)
-            elif result.result.type == 'errored':
-                entry = {'sample_id': result.custom_id, 'ok': False, 'error': str(result.result.error)}
-            else:
-                entry = {'sample_id': result.custom_id, 'ok': False, 'error': result.result.type}
-            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        for batch in batches:
+            for result in client.messages.batches.results(batch.id):
+                if result.result.type == 'succeeded':
+                    entry = parse_message(result.custom_id, result.result.message)
+                elif result.result.type == 'errored':
+                    entry = {'sample_id': result.custom_id, 'ok': False, 'error': str(result.result.error)}
+                else:
+                    entry = {'sample_id': result.custom_id, 'ok': False, 'error': result.result.type}
+                f.write(json.dumps(entry, ensure_ascii=False) + '\n')
     update_run(run_dir, collected_utc=datetime.now(timezone.utc).isoformat(timespec='seconds'))
     return True
 
@@ -276,6 +314,9 @@ def main():
     parser.add_argument('--ids', type=Path, action='append',
                         help='ID list (.txt, one per line) or a *-review-samples.json; repeatable; '
                              'default: every JPEG sample')
+    parser.add_argument('--cells', type=Path,
+                        help='Item list from make_cell_items.py (e.g. output/phase-abc/cell-items.json) '
+                             'instead of the review samples; cannot be combined with --ids')
     parser.add_argument('--prompt', type=Path, default=PROMPT_FILE,
                         help='Prompt file with a ```text block (default: prompts/seat-reader-api.md)')
     parser.add_argument('--output-dir', type=Path, default=BASE/'output/phase-abc')
@@ -300,14 +341,21 @@ def main():
             write_results(run_dir, batch=True)
         return
 
-    review = json.loads((out/'review-template.json').read_text(encoding='utf-8'))
-    items = select_items(review, out, args.ids)
+    if args.cells and args.ids:
+        raise SystemExit('Use either --cells or --ids')
+    if args.cells:
+        items = cell_items(out, args.cells)
+        source = args.cells.name
+    else:
+        review = json.loads((out/'review-template.json').read_text(encoding='utf-8'))
+        items = select_items(review, out, args.ids)
+        source = [p.name for p in args.ids] if args.ids else 'all JPEG samples'
     import anthropic  # imported late so "plan" also documents the SDK version it would use
     settings = {'model': model, 'effort': args.effort, 'max_tokens': args.max_tokens, 'thinking': 'adaptive',
                 'prompt_file': prompt_file.relative_to(BASE).as_posix(),
                 'prompt_sha256': hashlib.sha256(prompt.encode('utf-8')).hexdigest(),
                 'sdk': f'anthropic-python {anthropic.__version__}',
-                'ids': [p.name for p in args.ids] if args.ids else 'all JPEG samples', 'items': len(items)}
+                'ids': source, 'items': len(items)}
     fix_run(run_dir, settings)
     cost = estimate(items, prompt, model, args.assume_output_tokens, batch or args.mode == 'plan')
     print(json.dumps(cost, indent=2))
@@ -325,7 +373,7 @@ def main():
         run_sync(client, run_dir, items, prompt, args, model)
         write_results(run_dir, batch=False)
     else:
-        if (run_dir/'run.json').exists() and json.loads((run_dir/'run.json').read_text(encoding='utf-8')).get('batch_id'):
+        if batch_ids(json.loads((run_dir/'run.json').read_text(encoding='utf-8'))):
             raise SystemExit(f'{run_dir.name} already has a batch; run "collect" or use a new --name')
         submit_batch(client, run_dir, items, prompt, args, model)
 
